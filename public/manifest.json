@@ -1,0 +1,17 @@
+{
+  "name": "مربی یادگیری و بازطراحی رفتار | Learning Coach",
+  "short_name": "LearningCoach",
+  "description": "تبدیل مدل‌های ذهنی ۵ کتاب برجسته به برنامه‌های عملی و فردی با هوش مصنوعی",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#0d9488",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
