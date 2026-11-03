@@ -6,11 +6,11 @@ import {
   Share2,
   CheckCircle,
   Clock,
-  Sparkles,
   ShieldCheck,
   Check,
   BookOpen,
-  RotateCcw
+  RotateCcw,
+  Terminal
 } from 'lucide-react';
 
 interface BlueprintArtifactCardProps {
@@ -28,17 +28,15 @@ export const BlueprintArtifactCard: React.FC<BlueprintArtifactCardProps> = ({
 }) => {
   const [copied, setCopied] = React.useState(false);
 
-  // Trigger celebration confetti on mount
   useEffect(() => {
     confetti({
       particleCount: 80,
       spread: 70,
       origin: { y: 0.6 },
-      colors: ['#14b8a6', '#10b981', '#3b82f6', '#f59e0b']
+      colors: ['#00A19B', '#00F5D4', '#05D5AA', '#E2E8F0']
     });
   }, []);
 
-  // Derive Old Pattern vs New System dynamically based on the book framework and user state
   const deriveBlueprintContent = () => {
     switch (book.id) {
       case 'situated':
@@ -128,8 +126,8 @@ export const BlueprintArtifactCard: React.FC<BlueprintArtifactCardProps> = ({
 
   const handleCopyText = () => {
     const text = `
-🎯 بلوپرینت تغییر رفتار و اقدام عملیاتی
-کتاب: ${book.titleFa} | مدل ذهنی: ${book.frameworkNameFa}
+🎯 بلوپرینت مهندسی رفتار و اقدام عملیاتی
+کتاب: ${book.titleFa} | مدل: ${book.frameworkNameFa}
 ----------------------------------------
 ❌ الگوی قدیمی:
 ${blueprint.oldPattern}
@@ -140,10 +138,10 @@ ${blueprint.newSystem}
 ⏱️ آزمایش عملیاتی ۴۸ ساعته:
 ${blueprint.experiment48h}
 
-📌 قواعد طلایی سیستم:
+📌 قواعد طلایی:
 ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 ----------------------------------------
-تولید شده توسط مربی یادگیری و بازطراحی رفتار
+سیستم مربی یادگیری و بازطراحی رفتار
     `.trim();
 
     navigator.clipboard.writeText(text);
@@ -152,122 +150,122 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
   };
 
   return (
-    <div className="py-6 px-4 max-w-3xl mx-auto space-y-6">
-      {/* Top Banner */}
-      <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold text-emerald-400">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>جلسه با موفقیت تکمیل شد!</span>
+    <div className="py-6 px-4 max-w-3xl mx-auto space-y-5">
+      {/* Top Telemetry Header */}
+      <div className="text-center space-y-1.5">
+        <div className="inline-flex items-center gap-1.5 bg-surface-low border border-petronas-secondary/40 px-2.5 py-1 rounded-sm text-[11px] font-mono text-petronas-secondary">
+          <Terminal className="w-3.5 h-3.5" />
+          <span>SESSION COMPLETE // BLUEPRINT TELEMETRY LOCKED</span>
         </div>
-        <h2 className="text-xl sm:text-2xl font-black text-white">
-          سند نهایی بلوپرینت شخصی شما (Blueprint Artifact)
+        <h2 className="text-lg sm:text-2xl font-bold text-silver-platinum font-heading">
+          سند نهایی بلوپرینت رفتاری شما
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400">
-          این کارت اختصاصی، مدل ذهنی کتاب را مستقیماً روی چالش و محیط واقعی شما نگاشت کرده است.
+        <p className="text-xs text-silver-aero">
+          این کارت، مدل ذهنی کتاب را مستقیماً روی داده‌ها و موقعیت واقعی شما نگاشت کرده است.
         </p>
       </div>
 
-      {/* THE ARTIFACT CARD (Screenshot / Export Ready) */}
+      {/* THE BLUEPRINT SHEET (Screenshot / Print Ready) */}
       <div
         id="blueprint-card"
-        className="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-teal-500/60 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden"
+        className="bg-surface border-2 border-petronas-primary rounded p-6 sm:p-8 shadow-telemetry-glow relative overflow-hidden"
       >
-        {/* Subtle decorative glow */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Ambient subtle glow */}
+        <div className="absolute top-0 right-0 w-56 h-56 bg-petronas-primary/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Card Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-[#232B3B]">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[11px] font-bold text-teal-400 bg-teal-950/80 border border-teal-800/80 px-2.5 py-0.5 rounded-md">
-                {book.frameworkNameFa}
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="font-mono text-[10px] text-petronas-secondary bg-surface-low border border-petronas-primary/40 px-2 py-0.5 rounded-sm">
+                MODEL: {book.frameworkNameFa}
               </span>
-              <span className="text-[10px] text-slate-500 font-mono">
+              <span className="font-mono text-[10px] text-silver-graphite">
                 {new Date().toLocaleDateString('fa-IR')}
               </span>
             </div>
-            <h3 className="text-lg sm:text-xl font-black text-white">
+            <h3 className="text-base sm:text-xl font-bold text-silver-platinum font-heading">
               {book.titleFa}
             </h3>
-            <p className="text-xs text-slate-400">
-              بر پایه تحلیل‌های {book.authorFa} ({book.authorEn})
+            <p className="text-xs text-silver-aero">
+              تحلیل کاربردی بر پایه نظریات {book.authorFa} ({book.authorEn})
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 self-start sm:self-center text-xs text-emerald-400 bg-emerald-950/40 border border-emerald-800/60 px-3 py-1.5 rounded-xl font-semibold">
-            <ShieldCheck className="w-4 h-4" />
-            <span>سیستم بازطراحی‌شده آماده اجرا</span>
+          <div className="flex items-center gap-1.5 self-start sm:self-center font-mono text-[11px] text-petronas-tertiary bg-surface-low border border-petronas-tertiary/40 px-2.5 py-1 rounded-sm font-semibold">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>OPERATIONAL STATUS: READY</span>
           </div>
         </div>
 
-        {/* Body: Side-by-Side Contrast (Old Pattern vs New Redesigned System) */}
-        <div className="my-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Side-by-Side Contrast */}
+        <div className="my-5 grid grid-cols-1 md:grid-cols-2 gap-3.5">
           {/* Old Pattern */}
-          <div className="bg-rose-950/20 border border-rose-900/40 rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
+          <div className="bg-canvas border border-rose-950/80 rounded p-4 flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 text-xs font-bold text-rose-400 mb-2">
-                <span className="w-2 h-2 rounded-full bg-rose-500" />
-                <span>الگوی قدیمی (ناکارآمد / وابسته به اراده خام)</span>
+              <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-rose-400 mb-2 uppercase tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                <span>// OLD PATTERN (FRAGILE / WILLPOWER)</span>
               </div>
-              <p className="text-sm text-slate-300 leading-relaxed font-medium">
+              <p className="text-xs sm:text-sm text-silver-aero leading-relaxed font-normal">
                 {blueprint.oldPattern}
               </p>
             </div>
-            <span className="text-[10px] text-rose-400/80 block mt-3 pt-2 border-t border-rose-900/30">
-              ⚠️ در شرایط خستگی روانی فرو می‌پاشد.
+            <span className="font-mono text-[10px] text-rose-400/80 block mt-3 pt-2 border-t border-rose-950/60 uppercase">
+              CRITICAL: COLLAPSES UNDER COGNITIVE FATIGUE
             </span>
           </div>
 
           {/* New Redesigned System */}
-          <div className="bg-teal-950/20 border border-teal-500/40 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-lg">
+          <div className="bg-canvas border border-petronas-secondary/50 rounded p-4 flex flex-col justify-between shadow-sm">
             <div>
-              <div className="flex items-center gap-2 text-xs font-bold text-teal-400 mb-2">
-                <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-                <span>سیستم بازطراحی‌شده نوین (معماری رفتاری)</span>
+              <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-petronas-secondary mb-2 uppercase tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-petronas-secondary animate-pulse" />
+                <span>// NEW REDESIGNED SYSTEM (BEHAVIORAL SPEC)</span>
               </div>
-              <p className="text-sm text-teal-100 leading-relaxed font-semibold">
+              <p className="text-xs sm:text-sm text-silver-platinum leading-relaxed font-semibold">
                 {blueprint.newSystem}
               </p>
             </div>
-            <span className="text-[10px] text-teal-400/80 block mt-3 pt-2 border-t border-teal-800/30">
-              ✓ متکی بر علم موقعیت، لنگر عصبی و اصطکاک بیرونی.
+            <span className="font-mono text-[10px] text-petronas-secondary block mt-3 pt-2 border-t border-petronas-primary/30 uppercase">
+              ACTIVE: FRICTION-FREE UPSTREAM ARCHITECTURE
             </span>
           </div>
         </div>
 
         {/* 48-Hour Experiment Box */}
-        <div className="mb-6 bg-amber-950/20 border border-amber-500/40 rounded-2xl p-4 sm:p-5">
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-400 mb-2">
-            <Clock className="w-4 h-4 text-amber-400" />
-            <span>آزمایش عملیاتی ۴۸ ساعته (The 48-Hour Experiment)</span>
+        <div className="mb-5 bg-canvas border border-amber-500/40 rounded p-4 sm:p-5">
+          <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-amber-400 mb-2 uppercase tracking-wide">
+            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <span>// 48-HOUR EXPERIMENTAL PROTOCOL</span>
           </div>
-          <p className="text-sm text-amber-100 font-semibold leading-relaxed">
+          <p className="text-xs sm:text-sm text-amber-200 font-semibold leading-relaxed">
             {blueprint.experiment48h}
           </p>
         </div>
 
-        {/* Key Golden Rules / Levers */}
+        {/* Key Golden Rules */}
         <div className="space-y-2">
-          <span className="text-xs font-bold text-slate-400 block">
-            قواعد طلایی پایداری سیستم:
+          <span className="font-mono text-[10px] text-silver-graphite uppercase tracking-wider block">
+            SYSTEM EXECUTION RULES:
           </span>
           <div className="space-y-1.5">
             {blueprint.keyRules.map((rule, idx) => (
               <div
                 key={idx}
-                className="flex items-start gap-2 text-xs text-slate-300 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80"
+                className="flex items-start gap-2 text-xs text-silver-aero bg-canvas p-2.5 rounded border border-[#232B3B]"
               >
-                <CheckCircle className="w-3.5 h-3.5 text-teal-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle className="w-3.5 h-3.5 text-petronas-secondary flex-shrink-0 mt-0.5" />
                 <span>{rule}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Watermark / Footer */}
-        <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500">
-          <span>مربی یادگیری و بازطراحی رفتار | Applied Learning Coach</span>
-          <span>Zero-Cost Cognitive Architecture</span>
+        {/* Watermark */}
+        <div className="mt-5 pt-4 border-t border-[#232B3B] flex items-center justify-between font-mono text-[10px] text-silver-graphite">
+          <span>APPLIED LEARNING COACH // PETRONAS TELEMETRY</span>
+          <span>UNIT COST: &lt;$0.001</span>
         </div>
       </div>
 
@@ -276,35 +274,35 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
         <div className="flex items-center gap-2">
           <button
             onClick={onBackToBooks}
-            className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-white bg-slate-900 border border-slate-800 px-4 py-2.5 rounded-xl transition"
+            className="flex items-center gap-1.5 text-xs font-mono font-semibold text-silver-aero hover:text-white bg-surface-low border border-[#232B3B] px-3.5 py-2 rounded transition"
           >
-            <BookOpen className="w-4 h-4" />
+            <BookOpen className="w-3.5 h-3.5 text-petronas-secondary" />
             <span>فهرست کتاب‌ها</span>
           </button>
 
           <button
             onClick={onRestartBook}
-            className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-400 hover:text-amber-300 bg-slate-900 border border-slate-800 px-3 py-2.5 rounded-xl transition"
+            className="flex items-center gap-1.5 text-xs font-mono font-semibold text-silver-aero hover:text-amber-400 bg-surface-low border border-[#232B3B] px-3 py-2 rounded transition"
             title="تکرار جلسه و بازنویسی بلوپرینت"
           >
-            <RotateCcw className="w-4 h-4" />
-            <span className="hidden sm:inline">اجرای دوباره</span>
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">RESTART</span>
           </button>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyText}
-            className="flex items-center gap-2 text-xs sm:text-sm font-bold bg-slate-800 hover:bg-slate-700 text-slate-100 px-4 py-2.5 rounded-xl border border-slate-700 transition"
+            className="flex items-center gap-1.5 text-xs font-mono font-bold bg-surface-low hover:bg-surface-high text-silver-platinum px-3.5 py-2 rounded border border-[#232B3B] transition"
           >
             {copied ? (
               <>
-                <Check className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-400">متن کپی شد!</span>
+                <Check className="w-3.5 h-3.5 text-petronas-tertiary" />
+                <span className="text-petronas-tertiary">COPIED!</span>
               </>
             ) : (
               <>
-                <Share2 className="w-4 h-4" />
+                <Share2 className="w-3.5 h-3.5" />
                 <span>کپی خلاصه کارت</span>
               </>
             )}
@@ -312,9 +310,9 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 text-xs sm:text-sm font-bold bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-slate-950 px-4 py-2.5 rounded-xl shadow-lg transition"
+            className="flex items-center gap-1.5 text-xs font-mono font-bold bg-petronas-primary hover:bg-petronas-secondary text-canvas px-4 py-2 rounded border border-petronas-secondary shadow-petronas-btn transition"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-3.5 h-3.5" />
             <span>چاپ / ذخیره PDF</span>
           </button>
         </div>

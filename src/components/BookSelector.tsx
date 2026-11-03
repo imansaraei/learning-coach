@@ -1,6 +1,6 @@
 import React from 'react';
 import { BookCurriculum } from '../types/curriculum';
-import { Compass, RotateCcw, Zap, Brain, MessageSquare, Clock, ArrowLeft, Sparkles, ShieldCheck, BookOpen } from 'lucide-react';
+import { Compass, RotateCcw, Zap, Brain, MessageSquare, ArrowLeft, ShieldCheck, BookOpen, Terminal } from 'lucide-react';
 
 interface BookSelectorProps {
   books: BookCurriculum[];
@@ -9,11 +9,11 @@ interface BookSelectorProps {
 }
 
 const ICON_MAP: Record<string, React.ReactNode> = {
-  Compass: <Compass className="w-6 h-6" />,
-  RotateCcw: <RotateCcw className="w-6 h-6" />,
-  Zap: <Zap className="w-6 h-6" />,
-  Brain: <Brain className="w-6 h-6" />,
-  MessageSquare: <MessageSquare className="w-6 h-6" />,
+  Compass: <Compass className="w-5 h-5 text-petronas-secondary" />,
+  RotateCcw: <RotateCcw className="w-5 h-5 text-petronas-secondary" />,
+  Zap: <Zap className="w-5 h-5 text-petronas-secondary" />,
+  Brain: <Brain className="w-5 h-5 text-petronas-secondary" />,
+  MessageSquare: <MessageSquare className="w-5 h-5 text-petronas-secondary" />,
 };
 
 export const BookSelector: React.FC<BookSelectorProps> = ({
@@ -22,119 +22,134 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
   savedStates,
 }) => {
   return (
-    <div className="py-6 sm:py-8 px-4 max-w-4xl mx-auto">
-      {/* Hero Banner */}
-      <div className="mb-8 text-center sm:text-right bg-gradient-to-br from-slate-900/90 via-slate-900/50 to-teal-950/30 border border-slate-800/80 rounded-2xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/30 px-3 py-1 rounded-full text-xs font-semibold text-teal-400 mb-3">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>رویکرد تحول کاربردی (Applied Transformation)</span>
+    <div className="py-6 sm:py-8 px-4 max-w-4xl mx-auto space-y-6">
+      {/* Precision Hero Banner */}
+      <div className="relative rounded bg-surface border border-[#232B3B] p-6 sm:p-8 overflow-hidden shadow-sm">
+        {/* Ambient subtle glow */}
+        <div className="absolute -top-16 -right-16 w-56 h-56 bg-petronas-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="inline-flex items-center gap-2 bg-petronas-dark border border-petronas-primary/40 px-2.5 py-1 rounded-sm text-[11px] font-mono font-semibold text-petronas-secondary">
+            <span className="w-1.5 h-1.5 rounded-full bg-petronas-secondary animate-ping" />
+            <span>APPLIED TRANSFORMATION // BEHAVIORAL ARCHITECTURE</span>
+          </div>
+
+          <span className="font-mono text-[11px] text-silver-graphite uppercase tracking-wider hidden sm:inline">
+            CORE PLATFORM v2.5
+          </span>
         </div>
 
-        <h2 className="text-xl sm:text-3xl font-extrabold text-white mb-3 tracking-tight">
-          خلاصه‌خوانی منفعل را فراموش کنید؛ مدل‌های ذهنی را در زندگی واقعی پیاده کنید.
+        <h2 className="text-xl sm:text-2xl font-bold text-silver-platinum mb-3 font-heading tracking-tight leading-snug">
+          خلاصه‌خوانی منفعل را کنار بگذارید؛ مدل‌های ذهنی را در زندگی واقعی مهندسی کنید.
         </h2>
-        
-        <p className="text-sm sm:text-base text-slate-400 leading-relaxed max-w-2xl">
-          به جای نقل‌قول مستقیم از کتاب‌ها، مدل‌های رفتارشناسی ۵ کتاب شاهکار را به صورت گام‌به‌گام بیاموزید و همراه با هوش مصنوعی، برای عادات و چالش‌های واقعی خود «بلوپرینت اختصاصی» بسازید.
+
+        <p className="text-sm text-silver-aero leading-relaxed max-w-2xl mb-6">
+          به جای نقل‌قول مستقیم، سازوکار عصب‌شناختی و روان‌شناختی ۵ کتاب برجسته را گام‌به‌گام تحلیل کرده و همراه با هوش مصنوعی (Gemini 2.5 Flash)، برای عادات و چالش‌های خود «بلوپرینت ۴۸ ساعته» طراحی کنید.
         </p>
 
-        {/* Feature Badges */}
-        <div className="mt-6 flex flex-wrap gap-3 text-xs text-slate-300">
-          <div className="flex items-center gap-1.5 bg-slate-950/60 border border-slate-800 px-3 py-1.5 rounded-lg">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>مدل ایمن از حق نشر (تالیف تحلیلی)</span>
+        {/* Technical Spec Badges */}
+        <div className="flex flex-wrap gap-2.5 text-xs font-mono">
+          <div className="flex items-center gap-1.5 bg-surface-low border border-[#232B3B] px-2.5 py-1 rounded-sm text-silver-aero">
+            <ShieldCheck className="w-3.5 h-3.5 text-petronas-tertiary" />
+            <span>COPYRIGHT-SAFE SYNTHESIS</span>
           </div>
-          <div className="flex items-center gap-1.5 bg-slate-950/60 border border-slate-800 px-3 py-1.5 rounded-lg">
-            <Sparkles className="w-4 h-4 text-teal-400" />
-            <span>معماری بهینه هزینه صفر ($0 Gemini API)</span>
+          <div className="flex items-center gap-1.5 bg-surface-low border border-[#232B3B] px-2.5 py-1 rounded-sm text-silver-aero">
+            <span className="w-2 h-2 rounded-full bg-petronas-secondary" />
+            <span>ZERO-COST ARCHITECTURE (&lt;$0.001)</span>
           </div>
-          <div className="flex items-center gap-1.5 bg-slate-950/60 border border-slate-800 px-3 py-1.5 rounded-lg">
-            <span>🗣️ پشتیبانی صوتی Web Speech دوطرفه</span>
+          <div className="flex items-center gap-1.5 bg-surface-low border border-[#232B3B] px-2.5 py-1 rounded-sm text-silver-aero">
+            <span>WEB SPEECH API // DUAL VOICE</span>
           </div>
         </div>
       </div>
 
-      {/* Book Catalog Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-bold text-slate-100">کاتالوگ ۵ کتاب پرچمدار</h3>
-          <p className="text-xs text-slate-400">یک کتاب را برای شروع جلسه مربی‌گری انتخاب کنید</p>
+      {/* Catalog Header */}
+      <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-sm bg-petronas-primary" />
+          <h3 className="text-sm sm:text-base font-bold text-silver-platinum font-heading">
+            کاتالوگ ۵ کتاب پرچمدار
+          </h3>
         </div>
-        <span className="text-xs text-teal-400 bg-teal-950/50 border border-teal-800/50 px-2.5 py-1 rounded-full font-medium">
-          ۵ دوره آماده اجرا
+        <span className="font-mono text-[11px] text-petronas-secondary bg-petronas-dark border border-petronas-primary/40 px-2.5 py-0.5 rounded-sm">
+          5 ACTIVE TRACKS
         </span>
       </div>
 
       {/* Books Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {books.map((book) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        {books.map((book, index) => {
           const userState = savedStates[book.id];
-          const hasProgress = userState && Object.keys(userState).some(k => Boolean(userState[k]));
+          const hasProgress = userState && Object.keys(userState).some((k) => Boolean(userState[k]));
           const isCompleted = userState?.status === 'completed_blueprint';
 
           return (
             <div
               key={book.id}
               onClick={() => onSelectBook(book)}
-              className="group relative bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-teal-500/50 rounded-2xl p-5 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-teal-500/10 flex flex-col justify-between"
+              className="group relative bg-surface hover:bg-surface-high border border-[#232B3B] hover:border-petronas-secondary/50 rounded p-5 transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-sm hover:shadow-telemetry-glow"
             >
               <div>
-                {/* Header Row: Icon & Status Badge */}
+                {/* Header Row: Sector ID & Status */}
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-br ${book.accentColor} flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform duration-300`}
-                  >
-                    {ICON_MAP[book.iconName] || <BookOpen className="w-6 h-6" />}
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded bg-surface-low border border-[#232B3B] flex items-center justify-center group-hover:border-petronas-primary/60 transition">
+                      {ICON_MAP[book.iconName] || <BookOpen className="w-5 h-5 text-petronas-secondary" />}
+                    </div>
+                    <div>
+                      <span className="font-mono text-[10px] text-petronas-secondary tracking-widest block uppercase">
+                        SECTOR-0{index + 1}
+                      </span>
+                      <h4 className="text-base font-bold text-silver-platinum group-hover:text-petronas-secondary transition-colors leading-snug">
+                        {book.titleFa}
+                      </h4>
+                    </div>
                   </div>
 
-                  <div className="flex flex-col items-end">
+                  {/* Status Indicator */}
+                  <div>
                     {isCompleted ? (
-                      <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-2.5 py-0.5 rounded-full">
-                        ✓ بلوپرینت نهایی تکمیل شد
+                      <span className="font-mono text-[10px] text-petronas-tertiary bg-surface-low border border-petronas-tertiary/40 px-2 py-0.5 rounded-sm font-semibold">
+                        ✓ BLUEPRINT COMPLETE
                       </span>
                     ) : hasProgress ? (
-                      <span className="text-[11px] font-semibold text-amber-400 bg-amber-950/60 border border-amber-800/80 px-2.5 py-0.5 rounded-full">
-                        در حال پیشرفت
+                      <span className="font-mono text-[10px] text-amber-400 bg-surface-low border border-amber-500/40 px-2 py-0.5 rounded-sm font-semibold">
+                        RUNNING
                       </span>
                     ) : (
-                      <span className="text-[11px] font-medium text-slate-400 bg-slate-800/70 px-2.5 py-0.5 rounded-full">
-                        شروع نشده
+                      <span className="font-mono text-[10px] text-silver-graphite bg-surface-low border border-[#232B3B] px-2 py-0.5 rounded-sm">
+                        STANDBY
                       </span>
                     )}
                   </div>
                 </div>
 
-                {/* Title & Author */}
-                <h4 className="text-base font-bold text-white group-hover:text-teal-300 transition-colors mb-1">
-                  {book.titleFa}
-                </h4>
-                <div className="text-xs text-slate-400 mb-2 font-medium">
-                  نویسنده: <span className="text-slate-300">{book.authorFa}</span> ({book.authorEn})
+                {/* Author Info */}
+                <div className="text-xs text-silver-aero mb-3">
+                  نویسنده: <span className="text-silver-platinum font-medium">{book.authorFa}</span> ({book.authorEn})
                 </div>
 
-                {/* Framework Pill */}
-                <div className="inline-block bg-slate-950/80 border border-slate-800 text-[11px] text-teal-400 font-semibold px-2.5 py-1 rounded-lg mb-3">
-                  مدل ذهنی: {book.frameworkNameFa}
+                {/* Mental Model Pill */}
+                <div className="bg-surface-low border border-[#232B3B] text-[11px] text-petronas-secondary px-2.5 py-1 rounded-sm mb-3 font-mono inline-block">
+                  MODEL: {book.frameworkNameFa}
                 </div>
 
                 {/* Tagline */}
-                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-4">
+                <p className="text-xs text-silver-aero line-clamp-2 leading-relaxed mb-4">
                   {book.taglineFa}
                 </p>
               </div>
 
               {/* Card Footer */}
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5 text-slate-400">
-                  <Clock className="w-3.5 h-3.5 text-slate-500" />
-                  <span>{book.modules.length} ماژول (~۱۵ دقیقه)</span>
+              <div className="pt-3 border-t border-[#232B3B] flex items-center justify-between text-xs">
+                <div className="font-mono text-[11px] text-silver-graphite">
+                  {book.modules.length} ماژول (~۱۵ دقیقه)
                 </div>
 
-                <div className="flex items-center gap-1 text-teal-400 font-semibold group-hover:translate-x-[-4px] transition-transform">
+                <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-petronas-secondary group-hover:translate-x-[-3px] transition-transform">
+                  <Terminal className="w-3.5 h-3.5" />
                   <span>{hasProgress ? 'ادامه جلسه' : 'شروع یادگیری'}</span>
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className="w-3.5 h-3.5" />
                 </div>
               </div>
             </div>

@@ -112,7 +112,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-vazir selection:bg-teal-500 selection:text-slate-950">
+    <div className="min-h-screen bg-canvas text-silver-platinum flex flex-col font-vazir selection:bg-petronas-secondary selection:text-canvas">
       {/* Header */}
       <Header
         currentBook={currentBook}

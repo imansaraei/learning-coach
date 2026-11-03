@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Settings, Database, ArrowRight, Volume2, VolumeX } from 'lucide-react';
+import { BookOpen, Settings, ArrowRight, Volume2, VolumeX, Activity } from 'lucide-react';
 import { BookCurriculum } from '../types/curriculum';
 
 interface HeaderProps {
@@ -24,31 +24,36 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleAudioMute,
 }) => {
   return (
-    <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80 px-4 py-3">
+    <header className="sticky top-0 z-40 bg-[#0B0E14]/90 backdrop-blur-xl border-b border-[#232B3B] px-4 py-3">
       <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
-        {/* Left: Back or Brand */}
+        {/* Left: Brand or Back */}
         <div className="flex items-center gap-3">
           {currentBook ? (
             <button
               onClick={onBackToBooks}
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 px-3 py-1.5 rounded-xl transition"
+              className="flex items-center gap-2 text-xs font-mono font-medium text-silver-aero hover:text-white bg-surface-low hover:bg-surface-high border border-[#232B3B] hover:border-petronas-primary px-3 py-1.5 rounded transition"
               title="بازگشت به فهرست کتاب‌ها"
             >
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5 text-petronas-secondary" />
               <span>فهرست کتاب‌ها</span>
             </button>
           ) : (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-teal-500/20">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded bg-surface border border-petronas-primary/40 flex items-center justify-center text-petronas-secondary shadow-[0_0_12px_rgba(0,245,212,0.2)]">
                 <BookOpen className="w-4 h-4" />
               </div>
-              <div>
-                <h1 className="text-sm sm:text-base font-bold text-white tracking-tight">
-                  مربی یادگیری و بازطراحی رفتار
-                </h1>
-                <p className="text-[10px] text-teal-400 hidden sm:block">
-                  Applied Nonfiction Learning & Behavioral Coaching
-                </p>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-sm sm:text-base font-bold text-silver-platinum tracking-tight font-heading">
+                    مربی یادگیری و بازطراحی رفتار
+                  </h1>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-petronas-secondary animate-pulse" />
+                  <span className="font-mono text-[10px] text-silver-graphite uppercase tracking-wider">
+                    APPLIED TELEMETRY · 99.8% EFFICIENCY
+                  </span>
+                </div>
               </div>
             </div>
           )}
@@ -57,21 +62,21 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Center: Module Progress in reading mode */}
         {currentBook && (
           <div className="flex flex-col items-center">
-            <span className="text-xs font-semibold text-slate-200 line-clamp-1">
+            <span className="text-xs font-semibold text-silver-platinum line-clamp-1">
               {currentBook.titleFa}
             </span>
-            <div className="flex items-center gap-1 text-[11px] text-teal-400 font-medium">
-              <span>گام {currentModuleIndex + 1} از {currentBook.modules.length}</span>
-              <div className="flex items-center gap-0.5 mr-1">
+            <div className="flex items-center gap-2 text-[11px] font-mono text-petronas-secondary">
+              <span className="tabular-nums">ماژول {currentModuleIndex + 1} / {currentBook.modules.length}</span>
+              <div className="flex items-center gap-1">
                 {currentBook.modules.map((_, idx) => (
                   <span
                     key={idx}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                    className={`h-1 rounded-sm transition-all duration-300 ${
                       idx === currentModuleIndex
-                        ? 'w-5 bg-teal-400'
+                        ? 'w-6 bg-petronas-secondary shadow-[0_0_8px_rgba(0,245,212,0.6)]'
                         : idx < currentModuleIndex
-                        ? 'w-2 bg-emerald-500'
-                        : 'w-2 bg-slate-700'
+                        ? 'w-2 bg-petronas-primary'
+                        : 'w-2 bg-[#232B3B]'
                     }`}
                   />
                 ))}
@@ -85,10 +90,10 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Audio Mute/Unmute */}
           <button
             onClick={onToggleAudioMute}
-            className={`p-2 rounded-xl border transition ${
+            className={`p-2 rounded border transition ${
               isAudioMuted
-                ? 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300'
-                : 'bg-teal-950/40 border-teal-800/60 text-teal-400 hover:bg-teal-900/40'
+                ? 'bg-surface-low border-[#232B3B] text-silver-graphite hover:text-silver-aero'
+                : 'bg-petronas-dark border-petronas-primary/50 text-petronas-secondary shadow-[0_0_8px_rgba(0,245,212,0.2)]'
             }`}
             title={isAudioMuted ? 'فعال‌سازی صوت خوانش' : 'بی‌صدا کردن خوانش صوتی'}
           >
@@ -98,13 +103,13 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Live Framework State Drawer Toggle */}
           <button
             onClick={onToggleStateDrawer}
-            className="relative flex items-center gap-1.5 text-xs font-medium bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 px-3 py-1.5 rounded-xl transition"
+            className="flex items-center gap-1.5 text-xs font-mono bg-surface-low hover:bg-surface-high border border-[#232B3B] hover:border-petronas-secondary/50 text-silver-aero hover:text-white px-2.5 py-1.5 rounded transition"
             title="مشاهده وضعیت بلوپرینت در قالب JSON فشرده"
           >
-            <Database className="w-3.5 h-3.5 text-teal-400" />
-            <span className="hidden sm:inline">بلوپرینت زنده</span>
+            <Activity className="w-3.5 h-3.5 text-petronas-secondary" />
+            <span className="hidden sm:inline">STATE</span>
             {userStateKeyCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-teal-500 text-slate-950 text-[10px] font-black flex items-center justify-center">
+              <span className="text-[10px] font-mono bg-petronas-primary text-canvas px-1 rounded-sm font-bold tabular-nums">
                 {userStateKeyCount}
               </span>
             )}
@@ -113,7 +118,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Settings */}
           <button
             onClick={onOpenSettings}
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition"
+            className="p-2 rounded bg-surface-low hover:bg-surface-high border border-[#232B3B] hover:border-silver-aero text-silver-aero hover:text-white transition"
             title="تنظیمات مدل هوش مصنوعی و کلید API"
           >
             <Settings className="w-4 h-4" />
