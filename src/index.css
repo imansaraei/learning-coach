@@ -105,3 +105,63 @@
   animation: inkSeep 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   will-change: opacity, filter;
 }
+
+/* 3D Transform Utilities for Physical Books */
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Spine / Tome Elevation & Scale Phase (Phase 1: 0ms -> 280ms) */
+@keyframes bookElevation {
+  0% {
+    opacity: 0.2;
+    transform: translateY(70px) scale(0.72) rotateX(8deg);
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.9));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0deg);
+    filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.85));
+  }
+}
+
+.animate-book-elevation {
+  animation: bookElevation 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity, filter;
+}
+
+/* Front Cover Swing Opening (Phase 2: 500ms duration, RTL right-edge spine hinge) */
+@keyframes bookCoverSwingOpen {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(-160deg);
+  }
+}
+
+.animate-book-cover-swing {
+  transform-origin: right center;
+  animation: bookCoverSwingOpen 500ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  will-change: transform;
+}
+
+/* Page Cast Shadow overlay that dissipates as cover peels back */
+@keyframes pageCastShadowFade {
+  0% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-page-shadow {
+  animation: pageCastShadowFade 500ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  will-change: opacity;
+}

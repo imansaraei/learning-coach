@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { BookCurriculum } from '../types/curriculum';
 import { Sparkles, ArrowLeft, BookOpen, Flame, CloudRain } from 'lucide-react';
 import { playPageTurnSound } from '../services/soundService';
@@ -21,17 +21,33 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
   const [hoveredBookId, setHoveredBookId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isRainPlaying, setIsRainPlaying] = useState<boolean>(false);
-  const [openingBook, setOpeningBook] = useState<BookCurriculum | null>(null);
+  const [openingState, setOpeningState] = useState<{
+    book: BookCurriculum;
+    phase: 'lifting' | 'opening';
+  } | null>(null);
+  const timeoutsRef = useRef<number[]>([]);
+
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach((t) => clearTimeout(t));
+    };
+  }, []);
 
   const handleBookClick = (book: BookCurriculum) => {
-    if (openingBook) return;
-    setOpeningBook(book);
+    if (openingState) return;
+    setOpeningState({ book, phase: 'lifting' });
     playPageTurnSound();
-    // After book pulls out and swings open, transition to open reading codex
-    setTimeout(() => {
+
+    const t1 = window.setTimeout(() => {
+      setOpeningState({ book, phase: 'opening' });
+    }, 280);
+
+    const t2 = window.setTimeout(() => {
       onSelectBook(book);
-      setOpeningBook(null);
-    }, 750);
+      setOpeningState(null);
+    }, 780);
+
+    timeoutsRef.current.push(t1, t2);
   };
 
   // Book Spines physical styling mapping (matching Magic Books Scriptorium)
@@ -437,58 +453,122 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       </div>
 
       {/* 3D Book Drag Out and Opening Animation Overlay */}
-      {openingBook && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="relative flex flex-col items-center">
-            {/* 3D Book Container */}
-            <div className="relative w-64 h-88 sm:w-72 sm:h-96 [perspective:1200px]">
-              {/* Back Page / Body */}
-              <div className="absolute inset-0 bg-[#f4eee0] rounded-r-lg rounded-l-sm shadow-2xl p-6 flex flex-col justify-between border border-[#d5c3aa]">
-                <div className="flex flex-col items-center text-center pt-8">
-                  <span className="font-garamond text-xs text-[#785b30] uppercase tracking-widest mb-2 font-bold">
-                    {openingBook.titleEn}
-                  </span>
-                  <h3 className="font-garamond text-xl font-bold text-[#22180f]">
-                    {openingBook.titleFa}
-                  </h3>
-                  <div className="w-16 h-0.5 bg-[#d4af37] my-3" />
-                  <p className="font-vazir text-xs text-[#694e24] leading-relaxed">
-                    در حال گشودن صفحات پاپیروس و جریان جوهر زنده...
-                  </p>
-                </div>
-                <div className="text-center font-garamond text-xs text-[#846b4b] italic pb-4">
-                  Sanctum Codex Folio
+      {openingState && (() => {
+        const book = openingState.book;
+        const style = SPINE_STYLES[book.id];
+        const isOpening = openingState.phase === 'opening';
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="relative flex flex-col items-center">
+              {/* 3D Book Stage with Perspective */}
+              <div className="relative w-64 h-88 sm:w-72 sm:h-96 [perspective:1200px]">
+                {/* Book Body (elevates during phase 1) */}
+                <div className="relative w-full h-full preserve-3d animate-book-elevation">
+                  {/* Underlying Parchment Interior (Revealed when front cover swings open) */}
+                  <div className="absolute inset-0 bg-[#f8f3e6] rounded-r-lg rounded-l-sm shadow-2xl p-6 sm:p-7 flex flex-col justify-between border border-[#d5c3aa] overflow-hidden">
+                    {/* Shadow cast over the page during cover swing */}
+                    <div
+                      className={`absolute inset-0 bg-black/50 pointer-events-none transition-opacity ${
+                        isOpening ? 'animate-page-shadow' : 'opacity-70'
+                      }`}
+                    />
+
+                    {/* Subtle Top Filigree & English Title */}
+                    <div className="relative z-10 flex flex-col items-center text-center pt-4">
+                      <div className="w-10 h-10 rounded-full bg-[#eee5d3] border border-[#d4af37]/50 flex items-center justify-center text-[#996515] mb-3 shadow-inner">
+                        <span className="material-symbols-outlined text-[20px]">
+                          {style?.emblem || 'auto_stories'}
+                        </span>
+                      </div>
+                      <span className="font-garamond text-[11px] text-[#785b30] uppercase tracking-widest font-bold mb-1">
+                        {book.titleEn}
+                      </span>
+                      <h3 className="font-garamond text-xl sm:text-2xl font-bold text-[#22180f] leading-snug">
+                        {book.titleFa}
+                      </h3>
+                      <div className="w-16 h-0.5 bg-[#d4af37] my-3" />
+                      <p className="font-sans text-xs text-[#694e24] leading-relaxed max-w-[220px]">
+                        {book.taglineFa}
+                      </p>
+                    </div>
+
+                    {/* Bottom Metadata */}
+                    <div className="relative z-10 flex items-center justify-between text-xs font-sans text-[#846b4b] border-t border-[#d5c3aa]/60 pt-3">
+                      <span>{book.authorFa}</span>
+                      <span className="font-garamond text-[#996515] font-bold">
+                        ✦ {book.frameworkNameFa}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Front Cover Flipping Open (Hinged at Right Edge for RTL) */}
+                  <div
+                    className={`absolute inset-0 origin-right preserve-3d ${
+                      isOpening ? 'animate-book-cover-swing' : ''
+                    }`}
+                  >
+                    {/* Front Face of Cover (Visible during closed / lifting phase) */}
+                    <div className="absolute inset-0 backface-hidden bg-gradient-to-l from-[#1d120a] via-[#331c10] to-[#20120a] rounded-r-lg rounded-l-sm shadow-2xl p-6 sm:p-7 flex flex-col justify-between border-2 border-[#d4af37]/70">
+                      {/* Spine Leather Binding Accent (Right Edge) */}
+                      <div className="absolute top-0 right-0 bottom-0 w-3 bg-gradient-to-l from-black/50 to-transparent border-l border-[#d4af37]/30 pointer-events-none" />
+
+                      {/* Header Badge */}
+                      <div className="w-full flex justify-between items-center text-[#d4af37]">
+                        <span className="material-symbols-outlined text-[20px]">
+                          {style?.emblem || 'auto_stories'}
+                        </span>
+                        <span className="font-garamond text-xs font-bold tracking-widest uppercase text-[#d4af37]/90">
+                          {book.authorEn.split(' ').pop()}
+                        </span>
+                      </div>
+
+                      {/* Center Emblem & Title */}
+                      <div className="text-center my-auto py-2">
+                        <div className="w-12 h-12 mx-auto mb-3 rounded-full border border-[#d4af37]/50 flex items-center justify-center bg-black/25 shadow-[0_0_15px_rgba(212,175,55,0.25)]">
+                          <span className="material-symbols-outlined text-[24px] text-[#f2ca50]">
+                            {style?.emblem || 'auto_stories'}
+                          </span>
+                        </div>
+                        <h3 className="font-garamond text-2xl font-extrabold text-[#f2ca50] mb-2 drop-shadow-md leading-tight">
+                          {book.titleFa}
+                        </h3>
+                        <p className="font-sans text-xs sm:text-sm text-[#dec1b1] font-medium">
+                          {book.authorFa}
+                        </p>
+                      </div>
+
+                      {/* Footer Badge */}
+                      <div className="w-full text-center text-[#d4af37] text-xs font-garamond border-t border-[#d4af37]/30 pt-2.5">
+                        ✦ {book.frameworkNameFa} ✦
+                      </div>
+                    </div>
+
+                    {/* Back Face of Cover (Inside Lining, visible after -160deg swing) */}
+                    <div className="absolute inset-0 backface-hidden [transform:rotateY(180deg)] bg-gradient-to-r from-[#24170f] to-[#352115] rounded-l-lg rounded-r-sm p-6 flex flex-col justify-between border-2 border-[#a6822c]/50 shadow-inner">
+                      <div className="w-full h-full border border-[#a6822c]/30 rounded p-4 flex flex-col items-center justify-center text-center bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.06)_0%,transparent_70%)]">
+                        <span className="material-symbols-outlined text-[26px] text-[#a6822c]/60 mb-2">
+                          auto_stories
+                        </span>
+                        <span className="font-garamond text-xs text-[#d4af37]/70 tracking-widest uppercase">
+                          {book.titleEn}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Front Cover Flipping Open */}
-              <div className="absolute inset-0 origin-right transition-transform duration-700 ease-out [transform-style:preserve-3d] [transform:rotateY(-140deg)] bg-gradient-to-l from-[#20140c] via-[#3a2214] to-[#20140c] rounded-r-lg rounded-l-sm shadow-2xl p-6 flex flex-col justify-between border-2 border-[#d4af37]/60">
-                <div className="w-full flex justify-between items-center text-[#d4af37]">
-                  <span className="material-symbols-outlined text-[20px]">auto_stories</span>
-                  <span className="font-garamond text-xs font-bold tracking-widest uppercase">
-                    CODEX
-                  </span>
-                </div>
-                <div className="text-center">
-                  <h3 className="font-garamond text-2xl font-extrabold text-[#f2ca50] mb-1 drop-shadow">
-                    {openingBook.titleFa}
-                  </h3>
-                  <p className="font-sans text-xs text-[#dec1b1]">
-                    {openingBook.authorFa}
-                  </p>
-                </div>
-                <div className="w-full text-center text-[#d4af37] text-xs font-garamond">
-                  ✦ {openingBook.frameworkNameFa} ✦
-                </div>
-              </div>
+              {/* Status Message */}
+              <p className="mt-8 text-primary font-garamond text-sm sm:text-base font-bold animate-pulse">
+                {isOpening
+                  ? 'در حال گشودن صفحات...'
+                  : 'در حال بیرون کشیدن کتاب از قفسه...'}
+              </p>
             </div>
-
-            <p className="mt-8 text-primary font-garamond text-base font-bold animate-pulse">
-              در حال بیرون کشیدن کتاب از قفسه و گشودن صفحات...
-            </p>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };
