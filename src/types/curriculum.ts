@@ -36,11 +36,24 @@ export interface BookCurriculum {
   modules: ModuleData[];
 }
 
+export interface GeneratedModuleContent {
+  headline: string;
+  concept: string;
+  keyTakeaway: string;
+  question: string;
+  placeholder?: string;
+  diagramSteps?: Array<{
+    label: string;
+    desc: string;
+  }>;
+}
+
 export interface DynamicCoachingResult {
   coaching_response: string;
   next_question: string;
   updated_user_state: Record<string, any>;
   is_final_blueprint?: boolean;
+  generated_next_module?: GeneratedModuleContent;
 }
 
 export interface BlueprintArtifact {
