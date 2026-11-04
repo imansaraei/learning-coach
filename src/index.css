@@ -84,24 +84,24 @@
   transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 300ms ease;
 }
 
-/* Tom Riddle Diary Ink Seeping Animation */
+/* Tom Riddle Diary Ink Seeping Animation - Gentle liquid parchment soak */
 @keyframes inkSeep {
   0% {
-    opacity: 0;
-    filter: blur(2.5px);
-    transform: scale(0.97);
+    opacity: 0.15;
+    filter: blur(1.5px);
   }
-  50% {
-    opacity: 0.8;
-    filter: blur(0.8px);
+  60% {
+    opacity: 0.85;
+    filter: blur(0.4px);
   }
   100% {
     opacity: 1;
     filter: blur(0px);
-    transform: scale(1);
   }
 }
 
 .ink-seep {
-  animation: inkSeep 0.35s ease-out forwards;
+  display: inline;
+  animation: inkSeep 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  will-change: opacity, filter;
 }
