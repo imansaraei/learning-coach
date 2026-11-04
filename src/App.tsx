@@ -130,9 +130,9 @@ export const App: React.FC = () => {
     <div className="min-h-screen bg-surface text-on-surface flex flex-col font-vazir selection:bg-primary selection:text-on-primary transition-all duration-700 relative overflow-hidden">
       {/* Background Ambient Candlelight Orbs (scoped flicker to desk only; zero page jitter) */}
       {isCandlelit && (
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-          <div className="desk-ambient-glow absolute -top-24 left-1/2 -translate-x-1/2 w-[720px] h-[480px] rounded-full bg-[radial-gradient(circle,rgba(242,202,80,0.12)_0%,transparent_70%)]" />
-          <div className="desk-ambient-glow absolute -bottom-32 right-12 w-[600px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(212,143,56,0.08)_0%,transparent_70%)]" />
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden w-full h-full">
+          <div className="desk-ambient-glow absolute -top-24 left-1/2 -translate-x-1/2 w-[90vw] max-w-[720px] h-[480px] rounded-full bg-[radial-gradient(circle,rgba(242,202,80,0.12)_0%,transparent_70%)]" />
+          <div className="desk-ambient-glow absolute -bottom-32 left-1/2 -translate-x-1/2 w-[85vw] max-w-[600px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(212,143,56,0.08)_0%,transparent_70%)]" />
         </div>
       )}
 

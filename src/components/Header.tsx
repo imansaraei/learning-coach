@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, ArrowRight, Volume2, VolumeX, Sparkles, Flame } from 'lucide-react';
+import { Settings, ArrowRight, Volume2, VolumeX, Sparkles, BookOpen } from 'lucide-react';
 import { BookCurriculum } from '../types/curriculum';
 
 interface HeaderProps {
@@ -24,41 +24,33 @@ export const Header: React.FC<HeaderProps> = ({
   userStateKeyCount,
   isAudioMuted,
   onToggleAudioMute,
-  isCandlelit,
-  onToggleCandlelight,
 }) => {
   return (
-    <header className="sticky top-0 z-50 bg-surface/85 backdrop-blur-xl border-b border-outline-variant/40 px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.45)]">
-      <div className="max-w-4xl mx-auto flex items-center justify-between gap-2">
-        {/* Left: Brand or Back */}
-        <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 px-4 py-3">
+      <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
+        {/* Left: Brand or Back Button */}
+        <div className="flex items-center gap-3 min-w-0">
           {currentBook ? (
             <button
               onClick={onBackToBooks}
-              className="flex items-center gap-1.5 text-xs font-sans font-medium text-on-surface-variant hover:text-primary bg-surface-container hover:bg-surface-container-high border border-outline-variant/50 px-3 py-1.5 rounded-full transition-all active:scale-95"
-              title="بازگشت به کتابخانه"
+              className="flex items-center gap-1.5 text-xs font-sans font-medium text-on-surface-variant hover:text-primary bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 px-3 py-1.5 rounded-full transition-all active:scale-95 shrink-0"
+              title="بازگشت به قفسه کتاب‌ها"
             >
               <ArrowRight className="w-3.5 h-3.5 text-primary" />
-              <span>کتابخانه</span>
+              <span>بازگشت به کتابخانه</span>
             </button>
           ) : (
-            <div className="flex items-center gap-2.5">
-              {/* Magic Books Candlelight Emblem */}
-              <div className="relative w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center p-1 shadow-[0_2px_12px_rgba(212,175,55,0.3)] border border-primary/40">
-                <span className="material-symbols-outlined text-[20px] text-primary drop-shadow-[0_0_8px_rgba(242,202,80,0.6)]">
-                  auto_stories
-                </span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-primary/30 text-primary shrink-0">
+                <BookOpen className="w-4 h-4" />
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(242,202,80,0.8)]" />
-                  <span className="font-sans text-[10px] text-primary tracking-widest uppercase font-semibold">
-                    SANCTUM CODEX VAULT
-                  </span>
-                </div>
-                <h1 className="text-base font-bold text-on-surface font-garamond tracking-wide leading-none">
+              <div className="flex flex-col min-w-0">
+                <span className="font-garamond text-base sm:text-lg font-bold text-on-surface leading-tight truncate">
+                  کتاب‌های جادویی
+                </span>
+                <span className="font-sans text-[10px] sm:text-[11px] text-secondary truncate">
                   مربی یادگیری و بازطراحی رفتار
-                </h1>
+                </span>
               </div>
             </div>
           )}
@@ -92,51 +84,40 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
-          {/* Candlelight Toggle */}
-          <button
-            onClick={onToggleCandlelight}
-            className={`p-2 rounded-full border transition-all active:scale-95 ${
-              isCandlelit
-                ? 'bg-surface-container-high border-primary/60 text-primary shadow-[0_0_12px_rgba(242,202,80,0.3)]'
-                : 'bg-surface-container border-outline-variant/40 text-on-surface-variant hover:text-on-surface'
-            }`}
-            title={isCandlelit ? 'خاموش کردن نور شمع' : 'روشن کردن نور شمع'}
-          >
-            <Flame className={`w-4 h-4 ${isCandlelit ? 'text-primary fill-primary animate-pulse' : ''}`} />
-          </button>
-
           {/* Audio Mute/Unmute */}
           <button
             onClick={onToggleAudioMute}
             className={`p-2 rounded-full border transition-all active:scale-95 ${
               isAudioMuted
-                ? 'bg-surface-container border-outline-variant/40 text-outline hover:text-on-surface'
-                : 'bg-surface-container-high border-primary/50 text-primary shadow-[0_0_10px_rgba(242,202,80,0.2)]'
+                ? 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface'
+                : 'bg-surface-container-high border-primary/40 text-primary'
             }`}
             title={isAudioMuted ? 'فعال‌سازی صوت خوانش' : 'بی‌صدا کردن خوانش صوتی'}
           >
             {isAudioMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
 
-          {/* Live Framework State Drawer Toggle */}
-          <button
-            onClick={onToggleStateDrawer}
-            className="flex items-center gap-1.5 text-xs font-sans bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/60 hover:border-primary/50 text-on-surface px-3 py-1.5 rounded-full transition-all active:scale-95"
-            title="مشاهده وضعیت بلوپرینت در قالب سند فشرده"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span className="hidden sm:inline font-medium">سند زنده</span>
-            {userStateKeyCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-primary text-on-primary text-[10px] font-bold flex items-center justify-center">
-                {userStateKeyCount}
-              </span>
-            )}
-          </button>
+          {/* Live Framework State Drawer Toggle (Only in reading mode) */}
+          {currentBook && (
+            <button
+              onClick={onToggleStateDrawer}
+              className="flex items-center gap-1.5 text-xs font-sans bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/50 text-on-surface px-3 py-1.5 rounded-full transition-all active:scale-95"
+              title="مشاهده وضعیت بلوپرینت"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span className="hidden sm:inline font-medium">سند زنده</span>
+              {userStateKeyCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-primary text-on-primary text-[10px] font-bold flex items-center justify-center">
+                  {userStateKeyCount}
+                </span>
+              )}
+            </button>
+          )}
 
-          {/* Settings */}
+          {/* Settings Modal */}
           <button
             onClick={onOpenSettings}
-            className="p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary transition"
+            className="p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary transition-all active:scale-95"
             title="تنظیمات هوش مصنوعی و کلید API"
           >
             <Settings className="w-4 h-4" />
