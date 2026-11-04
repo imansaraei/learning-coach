@@ -154,10 +154,10 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
               authorLastName: book.authorEn.split(' ').pop() || '',
             };
 
-            const isHovered = hoveredBookId === book.id;
             const isSelected = activeBookId === book.id;
             const userState = savedStates[book.id];
             const bookCompleted = userState?.status === 'completed_blueprint';
+            const isBeingOpened = openingState?.book.id === book.id;
 
             return (
               <div
@@ -168,8 +168,8 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
                 }}
                 onMouseLeave={() => setHoveredBookId(null)}
                 onClick={() => handleBookClick(book)}
-                className={`group relative flex flex-col items-center cursor-pointer transition-all duration-300 z-20 ${
-                  isHovered || isSelected ? '-translate-y-4' : 'hover:-translate-y-2'
+                className={`group relative flex flex-col items-center cursor-pointer transition-all duration-300 z-20 sm:hover:-translate-y-3 ${
+                  isBeingOpened ? '-translate-y-6 scale-105' : 'translate-y-0'
                 }`}
               >
                 {/* Ribbon Bookmark */}
@@ -298,8 +298,8 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
             <div className="relative flex flex-col items-center">
-              {/* 3D Book Container */}
-              <div className="relative w-64 h-88 sm:w-72 sm:h-96 [perspective:1400px]">
+              {/* 3D Book Container — Explicit pixel dimensions on all mobile & desktop screens */}
+              <div className="relative w-[240px] h-[340px] sm:w-[280px] sm:h-[400px] [perspective:1400px]">
                 <div className="relative w-full h-full preserve-3d animate-book-elevation">
                   {/* Inside Page (Right Page) */}
                   <div className="absolute inset-0 bg-[#f4eee0] rounded-r-lg rounded-l-sm shadow-2xl p-6 flex flex-col justify-between border border-[#d5c3aa] overflow-hidden">
