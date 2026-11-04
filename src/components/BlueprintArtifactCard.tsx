@@ -6,11 +6,11 @@ import {
   Share2,
   CheckCircle,
   Clock,
-  ShieldCheck,
   Check,
   BookOpen,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Award
 } from 'lucide-react';
 
 interface BlueprintArtifactCardProps {
@@ -150,122 +150,131 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
   };
 
   return (
-    <div className="py-6 px-3 sm:px-4 max-w-3xl mx-auto space-y-6">
+    <div className="py-6 px-3 sm:px-6 max-w-4xl mx-auto space-y-6 text-on-surface">
       {/* Top Header */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/40 px-3 py-1 rounded-full text-xs font-garamond font-bold text-primary">
+        <div className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/40 px-3.5 py-1 rounded-full text-xs font-garamond font-bold text-primary">
           <Sparkles className="w-4 h-4" />
-          <span>سند با موفقیت مهر و موم شد!</span>
+          <span>سند با موفقیت در اسکریپتوریوم مهر و موم شد</span>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-on-surface font-garamond">
-          طومار بلوپرینت فردی (The Living Blueprint)
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-on-surface font-garamond">
+          طومار زرین بلوپرینت فردی (The Living Codex Blueprint)
         </h2>
         <p className="text-xs sm:text-sm text-secondary font-sans max-w-md mx-auto">
-          مدل ذهنی این کتاب به یک دستورالعمل عملیاتی و دقیق برای زندگی و محیط شخصی شما تبدیل شد.
+          مدل ذهنی این اثر به یک دستورالعمل عملیاتی و تغییر رفتار قطعی در زندگی و محیط شما تبدیل شد.
         </p>
       </div>
 
       {/* THE ILLUMINATED MANUSCRIPT BLUEPRINT SHEET */}
       <div
         id="blueprint-card"
-        className="relative bg-surface-container border-2 border-primary/60 rounded-3xl p-6 sm:p-9 shadow-gold-glow overflow-hidden"
+        className="relative w-full rounded-2xl bg-[#f4eee0] text-[#1c2430] p-6 sm:p-9 shadow-[0_18px_50px_rgba(0,0,0,0.65),inset_0_0_40px_rgba(42,26,16,0.18)] overflow-hidden border border-[#d5c3aa]/40"
       >
-        {/* Corner Ambient Halo */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Simulated deckled edges, cotton paper tooth, and spine gutter shadow */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#d5c3aa_1px,transparent_1px)] [background-size:14px_14px] opacity-40 mix-blend-multiply" />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#20140c]/25 via-[#20140c]/10 to-transparent" />
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-[#20140c]/15 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 shadow-[inset_0_1px_3px_rgba(255,255,255,0.7),inset_0_-2px_6px_rgba(0,0,0,0.2)]" />
 
-        {/* Header Ribbon & Title */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-outline-variant/40">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="font-sans text-[11px] font-bold text-on-primary bg-primary px-3 py-0.5 rounded-full">
-                مدل: {book.frameworkNameFa}
-              </span>
-              <span className="font-sans text-xs text-secondary">
-                {new Date().toLocaleDateString('fa-IR')}
-              </span>
-            </div>
-            <h3 className="text-xl sm:text-2xl font-bold text-on-surface font-garamond">
-              {book.titleFa}
-            </h3>
-            <p className="text-xs text-on-surface-variant font-sans">
-              بر پایه آموزه‌های روان‌شناختی {book.authorFa} ({book.authorEn})
-            </p>
-          </div>
+        {/* Top Page Rubric & Chapter Head */}
+        <div className="relative z-10 flex flex-col items-center text-center mb-6">
+          <span className="font-garamond text-xs tracking-[0.22em] text-[#785b30] uppercase mb-1 font-bold">
+            CHARTA AUREA · CODEX BLUEPRINT · {book.titleEn || book.titleFa}
+          </span>
+          <h3 className="font-garamond text-2xl sm:text-3xl font-extrabold text-[#22180f] tracking-tight">
+            {book.titleFa}
+          </h3>
+          <p className="font-garamond text-xs text-[#846b4b] uppercase mt-1 font-bold">
+            مدل رفتاری: {book.frameworkNameFa} • اثر {book.authorFa}
+          </p>
 
-          <div className="flex items-center gap-1.5 self-start sm:self-center font-sans text-xs text-primary bg-surface-container-high border border-primary/40 px-3.5 py-1.5 rounded-full font-semibold shadow-inner">
-            <ShieldCheck className="w-4 h-4" />
-            <span>سند مربی‌گری معتبر و آماده اجرا</span>
-          </div>
+          {/* Vintage Ornamental Flourish SVG Divider */}
+          <svg aria-hidden="true" className="w-36 h-4 my-3 text-[#9d7d49]" fill="currentColor" viewBox="0 0 160 16">
+            <path
+              d="M80 0 C74 5 62 8 48 8 C38 8 20 4 12 1 C6 -1 0 5 0 8 C0 11 6 17 12 15 C20 12 38 8 48 8 C62 8 74 11 80 16 C86 11 98 8 112 8 C122 8 140 12 148 15 C154 17 160 11 160 8 C160 5 154 -1 148 1 C140 4 122 8 112 8 C98 8 86 5 80 0 Z"
+              opacity="0.8"
+            />
+            <circle cx="80" cy="8" fill="#694b20" r="2.5" />
+          </svg>
         </div>
 
-        {/* Side-by-Side Dual Tablets */}
-        <div className="my-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Old Pattern (Faded Ink) */}
-          <div className="bg-surface-container-lowest/90 border border-outline-variant/50 rounded-2xl p-5 flex flex-col justify-between">
+        {/* Dual Tablets: Old Pattern vs New Redesigned System */}
+        <div className="relative z-10 my-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Old Pattern (Faded Iron-Gall Ink) */}
+          <div className="bg-[#ede2cb]/85 border border-[#c4b192] rounded-xl p-5 flex flex-col justify-between shadow-xs">
             <div>
-              <div className="flex items-center gap-2 font-sans text-xs font-bold text-rose-300 mb-2">
-                <span className="w-2 h-2 rounded-full bg-rose-400" />
-                <span>الگوی قدیمی (متکی بر اراده شکننده)</span>
+              <div className="flex items-center gap-2 font-garamond text-xs font-bold text-rose-900 mb-2">
+                <span className="w-2 h-2 rounded-full bg-rose-700" />
+                <span>الگوی قدیمی (متکی بر اراده شکننده در پایین‌دست)</span>
               </div>
-              <p className="text-sm text-on-surface-variant leading-relaxed font-vazir">
+              <p className="text-sm text-[#443828] leading-relaxed font-vazir">
                 {blueprint.oldPattern}
               </p>
             </div>
-            <span className="font-sans text-[10px] text-rose-300/80 block mt-4 pt-2 border-t border-outline-variant/30">
-              ⚠️ در زمان خستگی اراده فوراً متوقف می‌شود.
+            <span className="font-garamond text-xs text-rose-800/80 block mt-4 pt-2 border-t border-[#c4b192]/60">
+              ⚠️ در اولین نشانه خستگی یا استرس متوقف می‌شد.
             </span>
           </div>
 
-          {/* New System (Gilded Ink) */}
-          <div className="bg-surface-container-high/90 border border-primary/50 rounded-2xl p-5 flex flex-col justify-between shadow-md">
+          {/* New System (Illuminated Golden Ink) */}
+          <div className="bg-[#fcfaf3] border-2 border-[#b28b3c] rounded-xl p-5 flex flex-col justify-between shadow-md">
             <div>
-              <div className="flex items-center gap-2 font-sans text-xs font-bold text-primary mb-2">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span>سیستم بازطراحی‌شده نوین (معماری بالادست)</span>
+              <div className="flex items-center gap-2 font-garamond text-xs font-bold text-[#5c4013] mb-2">
+                <span className="w-2 h-2 rounded-full bg-[#d4af37] animate-pulse" />
+                <span>سیستم بازطراحی‌شده نوین (معماری موقعیت و هویت)</span>
               </div>
-              <p className="text-sm text-on-surface leading-relaxed font-vazir font-semibold">
+              <p className="text-sm text-[#1f1911] leading-relaxed font-vazir font-bold">
                 {blueprint.newSystem}
               </p>
             </div>
-            <span className="font-sans text-[10px] text-primary block mt-4 pt-2 border-t border-primary/20">
-              ✓ مبتنی بر اصطکاک فیزیکی، لنگر عادتی و محیط هوشمند.
+            <span className="font-garamond text-xs text-[#6e4e19] block mt-4 pt-2 border-t border-[#b28b3c]/30 font-semibold">
+              ✓ ریشه‌دار در چیدمان فیزیکی، حذف اصطکاک و لنگر عادتی.
             </span>
           </div>
         </div>
 
-        {/* 48-Hour Experiment in Brass Plaque */}
-        <div className="mb-6 bg-gradient-to-r from-surface-container-lowest via-surface-container-high to-surface-container-lowest border border-primary/40 rounded-2xl p-5 shadow-inner">
-          <div className="flex items-center gap-2 font-garamond text-base font-bold text-primary mb-2">
-            <Clock className="w-4 h-4 text-primary" />
+        {/* 48-Hour Experiment in Brass Cartouche */}
+        <div className="relative z-10 mb-6 bg-[#eee4d0]/90 border border-[#8c6a35] rounded-xl p-4 sm:p-5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center gap-2 font-garamond text-sm sm:text-base font-bold text-[#3c2a12] mb-1.5">
+            <Clock className="w-4 h-4 text-[#8c6a35]" />
             <span>پروتکل آزمایش عملیاتی ۴۸ ساعته (The 48-Hour Experiment)</span>
           </div>
-          <p className="text-sm text-on-surface font-vazir font-semibold leading-relaxed">
+          <p className="text-sm text-[#22180f] font-vazir font-medium leading-relaxed">
             {blueprint.experiment48h}
           </p>
         </div>
 
         {/* Key Execution Rules */}
-        <div className="space-y-2.5">
-          <span className="font-sans text-xs font-bold text-secondary uppercase tracking-wider block">
-            قواعد پایداری حکمت سیستم:
+        <div className="relative z-10 space-y-2.5">
+          <span className="font-garamond text-xs font-bold text-[#574236] uppercase tracking-wider block">
+            قواعد پایداری حکمت سیستم (Execution Axioms):
           </span>
           <div className="space-y-2">
             {blueprint.keyRules.map((rule, idx) => (
               <div
                 key={idx}
-                className="flex items-start gap-2.5 text-xs text-on-surface-variant bg-surface-container-lowest/60 p-3 rounded-xl border border-outline-variant/30"
+                className="flex items-start gap-2.5 text-xs text-[#2b241c] bg-[#fbf8f0] p-3 rounded-lg border border-[#d5c3aa] shadow-2xs"
               >
-                <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{rule}</span>
+                <CheckCircle className="w-4 h-4 text-[#7a5b28] flex-shrink-0 mt-0.5" />
+                <span className="leading-relaxed font-vazir">{rule}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Bottom Seal */}
-        <div className="mt-6 pt-4 border-t border-outline-variant/40 flex items-center justify-between font-sans text-[11px] text-outline">
-          <span>مربی یادگیری و بازطراحی رفتار • Magic Books Scriptorium</span>
-          <span>هزینه پردازش: کمتر از ۰.۰۰۱ دلار</span>
+        {/* Bottom Scriptorium Sign-Off & Wax Seal Embellishment */}
+        <div className="relative z-10 mt-6 pt-4 border-t border-[#7d6542]/25 flex items-center justify-between text-[#7d6542] text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-[#8c2a1e] text-[#ffd2cc] flex items-center justify-center font-bold text-[10px] shadow-sm">
+              <Award className="w-3.5 h-3.5" />
+            </div>
+            <span className="font-garamond text-xs font-semibold">
+              اسکریپتوریوم مربی یادگیری • Magic Books Scriptorium
+            </span>
+          </div>
+          <span className="font-garamond text-[11px] italic">
+            تاریخ صدور: {new Date().toLocaleDateString('fa-IR')}
+          </span>
         </div>
       </div>
 
@@ -274,7 +283,7 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
         <div className="flex items-center gap-2">
           <button
             onClick={onBackToBooks}
-            className="flex items-center gap-1.5 text-xs sm:text-sm font-sans font-semibold text-on-surface-variant hover:text-primary bg-surface-container border border-outline-variant/50 px-4 py-2.5 rounded-full transition-all active:scale-95"
+            className="flex items-center gap-1.5 text-xs sm:text-sm font-garamond font-bold text-on-surface-variant hover:text-primary bg-surface-container border border-outline-variant/50 px-4 py-2.5 rounded-full transition-all active:scale-95 shadow-sm"
           >
             <BookOpen className="w-4 h-4 text-primary" />
             <span>کتابخانه مجلدات</span>
@@ -282,7 +291,7 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 
           <button
             onClick={onRestartBook}
-            className="flex items-center gap-1.5 text-xs sm:text-sm font-sans font-semibold text-on-surface-variant hover:text-secondary bg-surface-container border border-outline-variant/50 px-3.5 py-2.5 rounded-full transition-all active:scale-95"
+            className="flex items-center gap-1.5 text-xs sm:text-sm font-garamond font-bold text-on-surface-variant hover:text-secondary bg-surface-container border border-outline-variant/50 px-3.5 py-2.5 rounded-full transition-all active:scale-95 shadow-sm"
             title="تکرار جلسه و بازنویسی بلوپرینت"
           >
             <RotateCcw className="w-4 h-4" />
@@ -293,7 +302,7 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
         <div className="flex items-center gap-2">
           <button
             onClick={handleCopyText}
-            className="flex items-center gap-2 text-xs sm:text-sm font-sans font-bold bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-4 py-2.5 rounded-full border border-outline-variant/60 transition-all active:scale-95"
+            className="flex items-center gap-2 text-xs sm:text-sm font-garamond font-bold bg-surface-container-high hover:bg-surface-container-highest text-on-surface px-4 py-2.5 rounded-full border border-outline-variant/60 transition-all active:scale-95 shadow-sm"
           >
             {copied ? (
               <>
@@ -310,7 +319,7 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 text-xs sm:text-sm font-sans font-bold bg-gradient-to-r from-primary to-primary-container text-on-primary px-5 py-2.5 rounded-full shadow-gold-glow transition-all active:scale-95"
+            className="flex items-center gap-2 text-xs sm:text-sm font-garamond font-bold bg-gradient-to-r from-primary to-primary-container text-on-primary px-5 py-2.5 rounded-full shadow-gold-glow transition-all active:scale-95"
           >
             <Download className="w-4 h-4" />
             <span>چاپ / ذخیره PDF</span>

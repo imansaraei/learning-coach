@@ -5,11 +5,23 @@ class SpeechService {
   private currentUtterance: SpeechSynthesisUtterance | null = null;
   private isRecognitionActive: boolean = false;
   private recognitionInstance: any = null;
+  private speechRate: number = 0.95;
 
   constructor() {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       this.synth = window.speechSynthesis;
     }
+  }
+
+  public setRate(rate: number): void {
+    this.speechRate = rate;
+    if (this.currentUtterance) {
+      this.currentUtterance.rate = rate;
+    }
+  }
+
+  public getRate(): number {
+    return this.speechRate;
   }
 
   public getCurrentUtterance(): SpeechSynthesisUtterance | null {
@@ -41,7 +53,7 @@ class SpeechService {
     }
 
     utterance.lang = 'fa-IR';
-    utterance.rate = 0.95; // Slightly measured rate for instructional clarity
+    utterance.rate = this.speechRate; // User selected or measured rate
     utterance.pitch = 1.0;
 
     utterance.onend = () => {
