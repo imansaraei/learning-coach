@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BookCurriculum, ModuleData, DynamicCoachingResult } from '../types/curriculum';
 import { speechService } from '../services/speechService';
 import { getDynamicCoachingTurn } from '../services/geminiService';
+import { playPageTurnSound } from '../services/soundService';
+import { LivingInkText } from './LivingInkText';
 import {
   Mic,
   MicOff,
   Volume2,
+  Bookmark,
+  Sparkles,
+  ArrowRight,
   ArrowLeft,
   CheckCircle2,
-  Sparkles,
-  Flame,
-  Feather,
-  Radio
+  Feather
 } from 'lucide-react';
 
 interface ModuleReaderProps {
@@ -21,44 +23,36 @@ interface ModuleReaderProps {
   onCompleteModuleTurn: (result: DynamicCoachingResult) => void;
   onGoToNextModule: () => void;
   onShowBlueprint: () => void;
+  onCloseBook: () => void;
   isAudioMuted: boolean;
+  onToggleAudioMute: () => void;
 }
 
 const ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI'];
 
-// Helper to provide pre-crafted reflection chips per book
-const getPreCraftedChips = (bookId: string, moduleIdx: number): string[] => {
+// Pre-crafted reflection sparks tailored for each book
+const getPreCraftedSparks = (bookId: string, moduleIdx: number): string[] => {
   switch (bookId) {
     case 'situated':
       if (moduleIdx === 0) return ['حذف گوشی از اتاق خواب', 'بستن تب‌های مرورگر قبل از خواب', 'تغییر محل نشستن در اتاق'];
-      if (moduleIdx === 1) return ['گفت‌وگوی درونی منفی حین شکست', 'احساس نیاز به انجام همه کارها', 'تفسیر چالش به عنوان ناتوانی'];
-      if (moduleIdx === 2) return ['بستن قرارداد تعهد با دوستم', 'پیوستن به گروه مطالعه عمیق', 'تعیین مربی و ناظر هفتگی'];
-      return ['حذف محرک‌های وسوسه‌انگیز', 'ایجاد مانع فیزیکی غیرقابل بازگشت', 'تغییر آرایش میز کار'];
-
+      if (moduleIdx === 1) return ['گفت‌وگوی درونی منفی حین شکست', 'احساس نیاز به انجام همه‌چیز', 'تفسیر چالش به عنوان ناتوانی'];
+      return ['بستن قرارداد تعهد با دوستم', 'پیوستن به گروه مطالعه عمیق', 'تعیین مربی و ناظر هفتگی'];
     case 'power-of-habit':
       if (moduleIdx === 0) return ['احساس خستگی در ساعت ۳ عصر', 'نوتیفیکیشن برنامه‌های پیام‌رسان', 'ورود به منزل بعد از کار'];
-      if (moduleIdx === 1) return ['گشت‌وگذار ناخودآگاه در اینستاگرام', 'خوردن شیرینی با چای عصرانه', 'به تعویق انداختن شروع پروژه'];
-      if (moduleIdx === 2) return ['نیاز به وقفه ذهنی ۵ دقیقه‌ای', 'تسکین اضطراب قبل از جلسه', 'نیاز به ارتباط اجتماعی با همکار'];
-      return ['پیاده‌روی ۵ دقیقه‌ای به‌جای گوشی', 'نوشیدن یک لیوان آب خنک', '۳ تنفس عمیق شکمی'];
-
+      if (moduleIdx === 1) return ['گشت‌وگذار ناخودآگاه در گوشی', 'خوردن شیرینی با چای عصرانه', 'به تعویق انداختن شروع پروژه'];
+      return ['نیاز به وقفه ذهنی ۵ دقیقه‌ای', 'تسکین اضطراب قبل از جلسه', 'نیاز به ارتباط اجتماعی با همکار'];
     case 'atomic-habits':
       if (moduleIdx === 0) return ['من نویسنده‌ای منظم هستم', 'من فردی سالم و پرانرژی هستم', 'من یادگیرنده‌ای متمرکز هستم'];
       if (moduleIdx === 1) return ['قرار دادن کتاب روی بالش صبحگاهی', 'پنهان کردن کنترل تلویزیون در کمد', 'آماده کردن قمقمه آب روی میز'];
-      if (moduleIdx === 2) return ['بعد از نوشیدن چای صبح، ۲ صفحه بخوانم', 'بعد از نشستن پشت میز، برنامه روز را بنویسم', 'بعد از مسواک زدن، ۱ دقیقه حرکات کششی'];
-      return ['فقط ۱ پاراگراف نوشتن', 'فقط ۲ دقیقه طناب زدن', 'فقط مرتب کردن میز'];
-
+      return ['بعد از نوشیدن چای صبح، ۲ صفحه بخوانم', 'بعد از نشستن پشت میز، برنامه روز را بنویسم', 'فقط ۱ پاراگراف نوشتن'];
     case 'thinking-fast-slow':
-      if (moduleIdx === 0) return ['قضاوت شتاب‌زده درباره پیام همکار', 'تصمیم آنی برای خرید آنلاین', 'پاسخ دادن هیجانی در بحث خانوادگی'];
-      if (moduleIdx === 1) return ['فراموش کردن نرخ پایه آماری', 'تمرکز فقط بر اخبار و شواهد در دسترس', 'اطمینان کاذب بر اساس حس اولیه'];
-      if (moduleIdx === 2) return ['قانون ۱۰ دقیقه توقف اجباری', 'نوشتن شواهد مخالف روی کاغذ', 'مشورت با یک ناظر بی‌طرف'];
-      return ['پروتکل ۵ سؤال معکوس', 'بررسی نرخ مبنا قبل از تصمیم', 'تنفس عمیق و به تعویق انداختن ارسال'];
-
+      if (moduleIdx === 0) return ['قضاوت شتاب‌زده درباره پیام همکار', 'تصمیم آنی برای خرید آنلاین', 'پاسخ دادن هیجانی در بحث'];
+      if (moduleIdx === 1) return ['فراموش کردن نرخ پایه آماری', 'تمرکز فقط بر شواهد در دسترس (WYSIATI)', 'اطمینان کاذب بر اساس حس اولیه'];
+      return ['قانون ۱۰ دقیقه توقف اجباری', 'نوشتن شواهد مخالف روی کاغذ', 'پروتکل بررسی ۵ سؤال معکوس'];
     case 'crucial-conversations':
       if (moduleIdx === 0) return ['میل به برنده شدن در بحث', 'ترس از به هم خوردن رابطه', 'دفاع از موضع شخصی به‌جای کشف حقیقت'];
       if (moduleIdx === 1) return ['سکوت گزنده و طعنه زدن', 'حمله کلامی و برچسب زدن', 'عقب‌نشینی منفعلانه'];
-      if (moduleIdx === 2) return ['بیان هدف مشترک در آغاز گفت‌وگو', 'تأکید بر احترام و امنیت روانی', 'شفاف کردن نیت مثبت پنهان'];
-      return ['طرح پرسش‌های باز و کنجکاوانه', 'ابراز درک احساسات طرف مقابل', 'تعیین مسئولیت‌ها و زمان‌بندی شفاف'];
-
+      return ['بیان هدف مشترک در آغاز گفت‌وگو', 'تأکید بر احترام و امنیت روانی', 'شفاف کردن نیت مثبت پنهان'];
     default:
       return ['تأمل در موقعیت واقعی', 'شناسایی نشانه آغازین', 'طراحی اقدام جایگزین'];
   }
@@ -71,7 +65,9 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
   onCompleteModuleTurn,
   onGoToNextModule,
   onShowBlueprint,
+  onCloseBook,
   isAudioMuted,
+  onToggleAudioMute,
 }) => {
   const currentModule: ModuleData = book.modules[moduleIndex];
   const isLastModule = moduleIndex === book.modules.length - 1;
@@ -85,12 +81,36 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
   const [stopListeningFn, setStopListeningFn] = useState<(() => void) | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [coachingResult, setCoachingResult] = useState<DynamicCoachingResult | null>(null);
-  const [isReadingAloud, setIsReadingAloud] = useState<boolean>(false);
   const [speechError, setSpeechError] = useState<string | null>(null);
-  const [showInscribeToast, setShowInscribeToast] = useState<boolean>(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState<'1x' | '1.5x' | 'flow'>('1x');
 
-  const reflectionChips = getPreCraftedChips(book.id, moduleIndex);
+  // Responsive book spread state (Double-page horizontal vs single-page vertical)
+  const [isDoublePage, setIsDoublePage] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    return window.innerWidth >= 768 && window.innerWidth > window.innerHeight;
+  });
+
+  // Mobile/Single page sub-leaf: 0 = Lesson & Diagram, 1 = Living Inscription & Response
+  const [mobileLeaf, setMobileLeaf] = useState<0 | 1>(0);
+
+  // Page turn flip state
+  const [isTurningPage, setIsTurningPage] = useState<boolean>(false);
+
+  const reflectionSparks = getPreCraftedSparks(book.id, moduleIndex);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const wide = window.innerWidth >= 768;
+      const landscape = window.innerWidth > window.innerHeight;
+      setIsDoublePage(wide || (landscape && window.innerWidth >= 640));
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const existingAnswer = (userState && userState[currentModule.interactivePrompt.stateTargetKey])
@@ -98,17 +118,12 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
       : '';
     setUserInput(existingAnswer);
     setCoachingResult(null);
+    setMobileLeaf(0);
     speechService.stop();
-    setIsReadingAloud(false);
 
     if (!isAudioMuted) {
       const textToRead = `${currentModule.title}. ${currentModule.staticCoreLesson.headline} ${currentModule.staticCoreLesson.concept}`;
-      speechService.speak(
-        textToRead,
-        () => setIsReadingAloud(false),
-        () => setIsReadingAloud(false)
-      );
-      setIsReadingAloud(true);
+      speechService.speak(textToRead);
     }
 
     return () => {
@@ -117,11 +132,13 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
     };
   }, [moduleIndex, book.id]);
 
-  const handleSpeedChange = (speed: '1x' | '1.5x' | 'flow') => {
-    setPlaybackSpeed(speed);
-    if (speed === '1x') speechService.setRate(0.95);
-    if (speed === '1.5x') speechService.setRate(1.35);
-    if (speed === 'flow') speechService.setRate(1.75);
+  const triggerPageTurn = (action: () => void) => {
+    setIsTurningPage(true);
+    playPageTurnSound();
+    setTimeout(() => {
+      action();
+      setIsTurningPage(false);
+    }, 380);
   };
 
   const toggleListening = () => {
@@ -145,28 +162,17 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
     }
   };
 
-  const handleToggleReadAloud = (text: string) => {
-    if (isReadingAloud) {
-      speechService.stop();
-      setIsReadingAloud(false);
-    } else {
-      setIsReadingAloud(true);
-      speechService.speak(
-        text,
-        () => setIsReadingAloud(false),
-        () => setIsReadingAloud(false)
-      );
+  const handleSparkClick = (sparkText: string) => {
+    setUserInput((prev) => {
+      if (!prev) return `در موقعیت من: ${sparkText}، `;
+      return `${prev} (تمرکز بر: ${sparkText})`;
+    });
+    if (textareaRef.current) {
+      textareaRef.current.focus();
     }
   };
 
-  const handleChipClick = (chipText: string) => {
-    setUserInput((prev) => {
-      if (!prev) return `در موقعیت من: ${chipText}، `;
-      return `${prev} (تمرکز بر: ${chipText})`;
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitInscription = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userInput.trim() || isLoading) return;
 
@@ -189,476 +195,377 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
       setCoachingResult(result);
       onCompleteModuleTurn(result);
 
-      setShowInscribeToast(true);
-      setTimeout(() => setShowInscribeToast(false), 4000);
-
       if (!isAudioMuted && result.coaching_response) {
-        speechService.speak(
-          result.coaching_response,
-          () => setIsReadingAloud(false),
-          () => setIsReadingAloud(false)
-        );
-        setIsReadingAloud(true);
+        speechService.speak(result.coaching_response);
       }
     } catch (err) {
-      console.error('Coaching turn failed:', err);
+      console.error('Inscription coaching turn failed:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div className="relative py-4 px-3 sm:px-6 max-w-4xl mx-auto space-y-6 pb-24 text-on-surface">
-      {/* Candlelight Ambient Gradient Orbs */}
-      <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 w-80 h-72 rounded-full bg-primary/10 blur-[80px]" />
-      <div className="pointer-events-none absolute top-96 -right-20 w-72 h-72 rounded-full bg-secondary-container/20 blur-[90px]" />
-
-      {/* Codex Sub-Navigation & Reading Telemetry */}
-      <div className="w-full flex items-center justify-between z-10 pt-1 pb-2">
-        {/* Folio Step Badge */}
-        <div className="flex items-center gap-2 bg-surface-container-low/80 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-outline-variant/40 shadow-sm">
-          <span className="material-symbols-outlined text-[16px] text-primary">auto_stories</span>
-          <span className="font-garamond text-xs text-secondary font-bold tracking-wider">
-            نسخه خطی {moduleIndex + 1} از {book.modules.length}
+  // =========================================================================
+  // RIGHT PAGE CONTENT (Lesson & Schematicus Mentis)
+  // =========================================================================
+  const renderRightPage = () => (
+    <div className="w-full h-full flex flex-col justify-between select-text p-6 sm:p-9 relative">
+      {/* Top Folio Header */}
+      <div>
+        <div className="flex items-center justify-between border-b border-[#aa936d]/30 pb-2 mb-4">
+          <span className="font-garamond text-xs tracking-[0.2em] text-[#785b30] uppercase font-bold">
+            LIBER {romanNumeral} · {book.titleEn.split(':')[0]}
           </span>
-          <span className="text-outline text-xs">·</span>
-          <span className="font-sans text-[11px] text-primary-fixed-dim font-medium">
-            {currentModule.frameworkStep}
+          <span className="font-garamond text-xs text-[#846b4b] italic">
+            فصل {romanNumeral}: {currentModule.frameworkStep}
           </span>
         </div>
 
-        {/* Living Ink Speed & Atmosphere Controls */}
-        <div className="flex items-center gap-2">
-          {/* Speed Selector */}
-          <div className="flex items-center bg-surface-container-low/90 backdrop-blur-md p-0.5 rounded-full border border-outline-variant/40 shadow-sm">
-            <button
-              onClick={() => handleSpeedChange('1x')}
-              className={`px-2.5 py-1 rounded-full text-xs font-garamond font-bold transition-all ${
-                playbackSpeed === '1x'
-                  ? 'bg-primary-container text-on-primary-container shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-              title="سرعت خوانش عادی"
-            >
-              1x
-            </button>
-            <button
-              onClick={() => handleSpeedChange('1.5x')}
-              className={`px-2.5 py-1 rounded-full text-xs font-garamond font-bold transition-all ${
-                playbackSpeed === '1.5x'
-                  ? 'bg-primary-container text-on-primary-container shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-              title="سرعت خوانش ۱.۵ برابر"
-            >
-              1.5x
-            </button>
-            <button
-              onClick={() => handleSpeedChange('flow')}
-              className={`px-2 py-1 rounded-full text-xs font-garamond font-bold flex items-center gap-0.5 transition-all ${
-                playbackSpeed === 'flow'
-                  ? 'bg-primary-container text-on-primary-container shadow-sm'
-                  : 'text-on-surface-variant hover:text-on-surface'
-              }`}
-              title="سرعت سریع (Flow)"
-            >
-              <span className="material-symbols-outlined text-[13px]">cyclone</span>
-            </button>
-          </div>
+        {/* Chapter Title */}
+        <h2 className="font-garamond text-2xl sm:text-3xl font-extrabold text-[#22180f] tracking-tight leading-snug mb-2">
+          {currentModule.title}
+        </h2>
 
-          {/* Atmosphere / TTS Audio Button */}
-          <button
-            onClick={() =>
-              handleToggleReadAloud(
-                `${currentModule.title}. ${currentModule.staticCoreLesson.headline} ${currentModule.staticCoreLesson.concept}`
-              )
-            }
-            className="w-8 h-8 rounded-full bg-surface-container-low/90 backdrop-blur-md flex items-center justify-center text-primary border border-outline-variant/40 hover:bg-surface-container-high transition-all shadow-sm"
-            title={isReadingAloud ? 'توقف صوت' : 'شنیدن صدای کتاب'}
-          >
-            {isReadingAloud ? (
-              <Radio className="w-4 h-4 text-rose-400 animate-pulse" />
-            ) : (
-              <span className="material-symbols-outlined text-[18px]">graphic_eq</span>
-            )}
-          </button>
-        </div>
-      </div>
+        {/* Vintage Ornamental Flourish */}
+        <svg aria-hidden="true" className="w-28 h-3 text-[#9d7d49] mb-3" fill="currentColor" viewBox="0 0 160 16">
+          <path
+            d="M80 0 C74 5 62 8 48 8 C38 8 20 4 12 1 C6 -1 0 5 0 8 C0 11 6 17 12 15 C20 12 38 8 48 8 C62 8 74 11 80 16 C86 11 98 8 112 8 C122 8 140 12 148 15 C154 17 160 11 160 8 C160 5 154 -1 148 1 C140 4 122 8 112 8 C98 8 86 5 80 0 Z"
+            opacity="0.8"
+          />
+          <circle cx="80" cy="8" fill="#694b20" r="2.5" />
+        </svg>
 
-      {/* ========================================================================= */}
-      {/* SECTION 1: THE LIVING PARCHMENT SHEET (Inside-of-the-Book Folio)          */}
-      {/* ========================================================================= */}
-      <article className="relative w-full rounded-2xl bg-[#f4eee0] text-[#1c2430] p-6 sm:p-9 shadow-[0_18px_50px_rgba(0,0,0,0.65),inset_0_0_40px_rgba(42,26,16,0.18)] overflow-hidden border border-[#d5c3aa]/40">
-        {/* Simulated deckled edges, cotton paper tooth, and spine gutter shadow */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#d5c3aa_1px,transparent_1px)] [background-size:14px_14px] opacity-40 mix-blend-multiply" />
-        
-        {/* Right Spine Gutter Gradient (for RTL book reading experience) */}
-        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#20140c]/25 via-[#20140c]/10 to-transparent" />
-        {/* Left Turning Edge Shadow */}
-        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-[#20140c]/15 to-transparent" />
-        {/* Inset Parchment Bevel Shadow */}
-        <div className="pointer-events-none absolute inset-0 shadow-[inset_0_1px_3px_rgba(255,255,255,0.7),inset_0_-2px_6px_rgba(0,0,0,0.2)]" />
-
-        {/* Top Page Rubric & Chapter Head */}
-        <div className="relative z-10 flex flex-col items-center text-center mb-6">
-          <span className="font-garamond text-xs tracking-[0.22em] text-[#785b30] uppercase mb-1 font-bold">
-            LIBER {romanNumeral} · TRACTATUS ANIMI · {book.titleEn || book.titleFa}
-          </span>
-          <h2 className="font-garamond text-2xl sm:text-3xl font-extrabold text-[#22180f] tracking-tight leading-snug">
-            فصل {romanNumeral}: {currentModule.title}
-          </h2>
-          <div className="font-garamond text-xs tracking-[0.14em] text-[#846b4b] uppercase mt-1 font-bold">
-            {currentModule.frameworkStep}
-          </div>
-
-          {/* Vintage Ornamental Flourish SVG Divider */}
-          <svg aria-hidden="true" className="w-36 h-4 my-3 text-[#9d7d49]" fill="currentColor" viewBox="0 0 160 16">
-            <path
-              d="M80 0 C74 5 62 8 48 8 C38 8 20 4 12 1 C6 -1 0 5 0 8 C0 11 6 17 12 15 C20 12 38 8 48 8 C62 8 74 11 80 16 C86 11 98 8 112 8 C122 8 140 12 148 15 C154 17 160 11 160 8 C160 5 154 -1 148 1 C140 4 122 8 112 8 C98 8 86 5 80 0 Z"
-              opacity="0.8"
-            />
-            <circle cx="80" cy="8" fill="#694b20" r="2.5" />
-          </svg>
-        </div>
-
-        {/* Headline Quote Box (Iron-Gall Ink & Parchment Highlight) */}
-        <div className="relative z-10 mb-6 bg-[#eee4d0]/90 border-r-4 border-[#8c6a35] pr-4 pl-3 py-3 rounded-l-lg shadow-[inset_0_1px_3px_rgba(0,0,0,0.06)]">
-          <p className="font-garamond text-lg sm:text-xl font-bold text-[#2a1d0f] leading-relaxed">
+        {/* Headline Quote (Iron-Gall Ink) */}
+        <div className="mb-4 pr-3 border-r-3 border-[#8c6a35]">
+          <p className="font-garamond text-base sm:text-lg font-bold text-[#2a1d0f] leading-relaxed">
             «{currentModule.staticCoreLesson.headline}»
           </p>
         </div>
 
-        {/* Concept Text with Historical Manuscript Layout */}
-        <div className="relative z-10 space-y-4 font-vazir text-sm sm:text-base text-[#222933] leading-relaxed">
-          <p className="first-letter:font-garamond first-letter:text-[34px] first-letter:font-bold first-letter:text-[#7d5c28] first-letter:ml-1.5 first-letter:float-right">
-            {currentModule.staticCoreLesson.concept}
-          </p>
-
-          {/* Ink Bleed / Living Quill Dynamic Passage */}
-          <div className="relative text-[#1e2e42] bg-[#364f6b]/5 border border-[#364f6b]/15 p-3.5 rounded-lg shadow-sm font-vazir">
-            <span className="font-medium text-[#162744]">
-              سیر مدل ذهنی در این بخش جاری است. مدل رفتاری زیر، ستون فقرات بازنویسی تصمیمات شماست:
-            </span>
-            {/* Living Golden Pulsing Quill Cursor */}
-            <span className="inline-block relative w-4 h-5 mr-1.5 align-baseline text-primary">
-              <span className="absolute bottom-0.5 right-0 w-[2.5px] h-4 bg-[#d4af37] animate-pulse rounded-full shadow-[0_0_8px_rgba(212,175,55,0.8)]" />
-              <Feather className="w-3.5 h-3.5 absolute -top-1.5 -right-0.5 text-[#d4af37] animate-bounce" />
-            </span>
-          </div>
+        {/* Core Lesson Concept (Tom Riddle's Diary Living Ink Effect) */}
+        <div className="font-vazir text-xs sm:text-sm text-[#222933] leading-relaxed mb-4">
+          <LivingInkText
+            text={currentModule.staticCoreLesson.concept}
+            speedMs={25}
+            inkColor="#222933"
+          />
         </div>
+      </div>
 
-        {/* Conceptual Illustration: Schematicus Mentis (The Arcane Schematic Canvas) */}
-        {currentModule.staticCoreLesson.diagramSteps && (
-          <div className="relative z-10 my-6 bg-[#eee4d0]/85 rounded-xl p-4 sm:p-5 border border-[#aa936d]/40 shadow-[inset_0_1px_4px_rgba(42,26,16,0.12)]">
-            <div className="flex items-center justify-between mb-3 border-b border-[#aa936d]/30 pb-2">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[17px] text-[#7a5b28]">schema</span>
-                <span className="font-garamond text-xs font-bold tracking-wider uppercase text-[#694e24]">
-                  Schematicus Mentis: سیر منطقی مدل ذهنی
-                </span>
-              </div>
-              <span className="font-garamond text-[11px] italic text-[#846b4b]">
-                Anno Domini · فریم‌ورک علمی
-              </span>
-            </div>
-
-            {/* Arcane Schematic SVG Visualizer */}
-            <div className="relative w-full aspect-[21/9] max-h-48 flex items-center justify-center my-2">
-              <svg className="w-full h-full max-w-md" fill="none" viewBox="0 0 340 120">
-                {/* Circulating Alchemy Loop Background Path */}
-                <path
-                  d="M 30 60 C 90 20, 150 20, 170 60 C 190 100, 250 100, 310 60"
-                  stroke="#796241"
-                  strokeDasharray="4 4"
-                  strokeOpacity="0.75"
-                  strokeWidth="1.8"
-                />
-                <path
-                  d="M 310 60 C 250 20, 190 20, 170 60 C 150 100, 90 100, 30 60"
-                  stroke="#382914"
-                  strokeOpacity="0.3"
-                  strokeWidth="1"
-                />
-
-                {/* Dynamic Steps Rendered as Alchemical Nodes */}
-                {currentModule.staticCoreLesson.diagramSteps.map((step, idx) => {
-                  const xPos = 45 + idx * (250 / Math.max(1, currentModule.staticCoreLesson.diagramSteps!.length - 1));
-                  const yPos = idx % 2 === 0 ? 55 : 65;
-                  const nodeRoman = ROMAN_NUMERALS[idx] || `${idx + 1}`;
-
-                  return (
-                    <g key={idx} transform={`translate(${xPos}, ${yPos})`}>
-                      {/* Outer Astrolabe Rings */}
-                      <circle cx="0" cy="0" r="18" fill="#f8f4ea" stroke="#684e26" strokeWidth="1.5" />
-                      <circle cx="0" cy="0" r="13" fill="#eee4d0" stroke="#8c6a35" strokeDasharray="2 2" strokeWidth="1" />
-                      {/* Center Point */}
-                      <circle cx="0" cy="0" r="2.5" fill="#d4af37" />
-                      {/* Node Label Text */}
-                      <text
-                        x="0"
-                        y={idx % 2 === 0 ? -22 : 28}
-                        fill="#3f2c14"
-                        fontFamily="'EB Garamond', serif"
-                        fontSize="10"
-                        fontWeight="bold"
-                        letterSpacing="1"
-                        textAnchor="middle"
-                      >
-                        {nodeRoman}. {step.label}
-                      </text>
-                    </g>
-                  );
-                })}
-              </svg>
-            </div>
-
-            {/* Step Descriptions Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-3 pt-3 border-t border-[#aa936d]/20">
-              {currentModule.staticCoreLesson.diagramSteps.map((step, idx) => (
-                <div
-                  key={idx}
-                  className="bg-[#fcfaf3] border border-[#d5c3aa] rounded-lg p-3 flex flex-col justify-between shadow-xs"
-                >
-                  <div className="flex items-center gap-1.5 font-garamond text-xs text-[#574236] font-bold mb-1">
-                    <span className="w-4 h-4 rounded-full bg-[#d4af37]/25 text-[#3c2f00] text-[10px] flex items-center justify-center font-bold">
-                      {idx + 1}
-                    </span>
-                    <span>{step.label}</span>
-                  </div>
-                  <p className="text-xs text-[#3f382f] leading-relaxed font-vazir">
-                    {step.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Annotative Callout Tag */}
-            <div className="mt-3 text-center font-garamond text-xs sm:text-sm text-[#4f3c21] italic bg-[#fbf8f0]/95 border border-[#aa936d]/30 px-3 py-1.5 rounded-lg shadow-2xs">
-              « نکته زرین: {currentModule.staticCoreLesson.keyTakeaway} »
-            </div>
-          </div>
-        )}
-
-        {/* Historical Scribe Notes & Micro-Marginalia */}
-        <div className="relative z-10 pt-3 mt-4 border-t border-[#7d6542]/20 flex items-center justify-between text-[#7d6542] text-xs">
-          <div className="flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[14px]">history_edu</span>
-            <span className="font-garamond text-xs italic">
-              ثبت‌شده در اسکریپتوریوم دانش‌پژوهان (Living Codex Ledger)
+      {/* Schematicus Mentis: The Arcane Illustration Engraving */}
+      {currentModule.staticCoreLesson.diagramSteps && (
+        <div className="my-auto bg-[#eee4d0]/90 rounded-xl p-3 sm:p-4 border border-[#aa936d]/40 shadow-[inset_0_1px_3px_rgba(42,26,16,0.12)]">
+          <div className="flex items-center justify-between border-b border-[#aa936d]/30 pb-1.5 mb-2">
+            <span className="font-garamond text-xs font-bold text-[#694e24] tracking-wider uppercase flex items-center gap-1">
+              <span className="material-symbols-outlined text-[15px]">schema</span>
+              Schematicus Mentis
             </span>
-          </div>
-          <div className="flex items-center -space-x-1.5 rtl:space-x-reverse">
-            <div className="w-5 h-5 rounded-full bg-[#1b263b] flex items-center justify-center text-[10px] text-primary shadow-xs font-semibold">
-              A
-            </div>
-            <div className="w-5 h-5 rounded-full bg-[#3c2a1a] flex items-center justify-center text-[10px] text-[#dec1b1] shadow-xs font-semibold">
-              M
-            </div>
-            <div className="w-5 h-5 rounded-full bg-[#203628] flex items-center justify-center text-[10px] text-[#a4d4b4] shadow-xs font-semibold">
-              E
-            </div>
-            <div className="w-5 h-5 rounded-full bg-[#4a2e1e] flex items-center justify-center text-[10px] text-[#ffe088] shadow-xs font-semibold">
-              I
-            </div>
-          </div>
-        </div>
-      </article>
-
-      {/* ========================================================================= */}
-      {/* SECTION 2: CO-WRITING HAND-OFF (Floating Translucent Scriptorium Dock)     */}
-      {/* ========================================================================= */}
-      <section className="relative w-full rounded-2xl bg-surface-container-high/90 backdrop-blur-xl p-5 sm:p-6 shadow-[0_12px_40px_rgba(0,0,0,0.55)] border border-primary/25">
-        {/* Living Codex Question Badge */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-container/20 border border-primary/30 text-primary">
-            <span className="material-symbols-outlined text-[15px]">magic_button</span>
-            <span className="font-garamond text-xs font-bold uppercase tracking-wider">
-              The Living Book Asks · پرسش زندهٔ کتاب:
+            <span className="font-garamond text-[10px] italic text-[#846b4b]">
+              مدل ذهنی رفتار
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 font-garamond text-xs text-on-surface-variant">
-            <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
-            <span className="text-primary font-bold">Ink Wet · آمادهٔ تحریر</span>
-          </div>
-        </div>
-
-        {/* Question Prompt */}
-        <h3 className="font-garamond text-lg sm:text-xl text-on-surface mb-2 font-bold leading-relaxed">
-          {currentModule.interactivePrompt.question}
-        </h3>
-
-        {currentModule.interactivePrompt.contextHint && (
-          <p className="text-xs text-secondary mb-3 bg-surface-container-lowest/70 p-3 rounded-lg border border-outline-variant/30 font-vazir leading-relaxed">
-            💡 راهنمای تفکر: {currentModule.interactivePrompt.contextHint}
-          </p>
-        )}
-
-        {/* Pre-Crafted Reflection Chips (Instant Low-Friction Inspiration) */}
-        <div className="mb-3">
-          <div className="text-[11px] font-garamond text-outline font-semibold mb-1.5 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-primary" />
-            <span>الهام‌بخش‌های سریع (برای درج کلیک کنید):</span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {reflectionChips.map((chip, idx) => (
-              <button
+          <div className="grid grid-cols-3 gap-2">
+            {currentModule.staticCoreLesson.diagramSteps.map((step, idx) => (
+              <div
                 key={idx}
-                type="button"
-                onClick={() => handleChipClick(chip)}
-                className="px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant/40 text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition-colors font-garamond text-xs flex items-center gap-1 shadow-xs"
+                className="bg-[#fcfaf3] border border-[#d5c3aa] rounded-md p-2 flex flex-col justify-between shadow-2xs"
               >
-                <span className="material-symbols-outlined text-[12px] text-primary">draw</span>
-                <span>{chip}</span>
-              </button>
+                <div className="flex items-center gap-1 font-garamond text-xs text-[#574236] font-bold mb-0.5">
+                  <span className="w-4 h-4 rounded-full bg-[#d4af37]/30 text-[#3c2f00] text-[10px] flex items-center justify-center font-bold">
+                    {idx + 1}
+                  </span>
+                  <span className="truncate">{step.label}</span>
+                </div>
+                <p className="text-[11px] text-[#3f382f] leading-snug font-vazir line-clamp-2">
+                  {step.description}
+                </p>
+              </div>
             ))}
           </div>
+
+          <div className="mt-2 text-center font-garamond text-[11px] text-[#4f3c21] italic bg-[#fbf8f0]/95 px-2 py-1 rounded border border-[#aa936d]/20">
+            « {currentModule.staticCoreLesson.keyTakeaway} »
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Folio Marking */}
+      <div className="flex items-center justify-between pt-2 border-t border-[#aa936d]/25 text-xs text-[#7d6542] font-garamond">
+        <span>صحیفه {moduleIndex * 2 + 1}</span>
+        {!isDoublePage && (
+          <button
+            onClick={() => triggerPageTurn(() => setMobileLeaf(1))}
+            className="flex items-center gap-1 text-xs font-bold text-[#694e24] hover:text-[#22180f] transition-colors"
+          >
+            <span>ورق زدن به صفحه تحریر</span>
+            <ArrowLeft className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  // =========================================================================
+  // LEFT PAGE CONTENT (Inscribed Diary & Living Scribe Dialogue - No Dialog Box)
+  // =========================================================================
+  const renderLeftPage = () => (
+    <div className="w-full h-full flex flex-col justify-between select-text p-6 sm:p-9 relative">
+      {/* Top Header of Inscription Page */}
+      <div>
+        <div className="flex items-center justify-between border-b border-[#aa936d]/30 pb-2 mb-3">
+          <span className="font-garamond text-xs tracking-[0.2em] text-[#785b30] uppercase font-bold flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-ping" />
+            DIARIUM VIVUM · ثبت بر روی نسخه خطی
+          </span>
+          <span className="font-garamond text-xs text-[#846b4b] italic">
+            پاسخ زنده به کتاب
+          </span>
         </div>
 
-        {/* Input Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Active Manuscript Input Area */}
-          <div className="relative w-full rounded-xl bg-surface-container-lowest/90 border border-outline-variant/60 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary p-3.5 shadow-inner transition-all">
-            <div className="flex items-start gap-2.5">
-              <span className="material-symbols-outlined text-[20px] text-primary mt-1">stylus</span>
-              <div className="flex-1">
-                <label className="block font-garamond text-xs text-outline uppercase tracking-wider mb-1 font-bold">
-                  نگارش دست‌نویس شما در کالبد کتاب (Your Handwritten Inscription)
-                </label>
-                <textarea
-                  rows={3}
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  placeholder={currentModule.interactivePrompt.placeholder}
-                  className="w-full bg-transparent border-0 p-0 text-on-surface focus:outline-none resize-none font-vazir text-sm leading-relaxed placeholder:text-outline-variant"
-                />
-              </div>
+        {/* The Living Book Asks: Inscribed in iron-gall ink */}
+        <div className="mb-3">
+          <span className="font-garamond text-xs text-[#785b30] uppercase tracking-wider block font-bold mb-1">
+            پرسش زندهٔ کتاب (The Living Book Inquires):
+          </span>
+          <h3 className="font-garamond text-base sm:text-lg font-bold text-[#22180f] leading-snug">
+            <LivingInkText
+              text={currentModule.interactivePrompt.question}
+              speedMs={20}
+              inkColor="#1c2430"
+            />
+          </h3>
+        </div>
+
+        {/* Quick Inspiration Sparks (appear like faint pencil notes) */}
+        {!coachingResult && (
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-1.5">
+              {reflectionSparks.map((spark, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSparkClick(spark)}
+                  className="px-2.5 py-1 rounded-full bg-[#eee4d0]/80 hover:bg-[#e4d7bf] border border-[#d5c3aa] text-[#694e24] hover:text-[#22180f] font-garamond text-xs flex items-center gap-1 transition-colors shadow-2xs"
+                >
+                  <span className="material-symbols-outlined text-[11px]">draw</span>
+                  <span>{spark}</span>
+                </button>
+              ))}
             </div>
+          </div>
+        )}
+
+        {/* Ruled Parchment Notebook Lines (User writes directly on the paper) */}
+        <form onSubmit={handleSubmitInscription} className="space-y-3">
+          <div className="relative w-full rounded-lg bg-[#eee4d0]/30 border border-[#d5c3aa]/70 p-3 shadow-inner">
+            <label className="block font-garamond text-[11px] text-[#785b30] uppercase tracking-wider mb-1 font-bold">
+              دست‌خط شما بر اوراق کتاب (Your Inscription):
+            </label>
+            <textarea
+              ref={textareaRef}
+              rows={coachingResult ? 2 : 4}
+              value={userInput}
+              disabled={isLoading || Boolean(coachingResult)}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder={currentModule.interactivePrompt.placeholder}
+              className="w-full bg-transparent border-0 p-0 text-[#1c2430] font-vazir text-xs sm:text-sm leading-relaxed outline-none resize-none placeholder:text-[#9d7d49]/70 disabled:opacity-85"
+              style={{
+                backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, rgba(170, 147, 109, 0.25) 27px, rgba(170, 147, 109, 0.25) 28px)',
+                lineHeight: '28px',
+              }}
+            />
+
+            {/* Inline Action Tools on the Page */}
+            {!coachingResult && (
+              <div className="flex items-center justify-between pt-2 border-t border-[#d5c3aa]/40">
+                <button
+                  type="button"
+                  onClick={toggleListening}
+                  className={`p-1.5 rounded-full border transition-all ${
+                    isListening
+                      ? 'bg-rose-900 text-rose-100 border-rose-600 animate-pulse'
+                      : 'bg-[#fcfaf3] border-[#d5c3aa] text-[#785b30] hover:text-[#22180f]'
+                  }`}
+                  title={isListening ? 'توقف ضبط' : 'نگارش با قلم صوتی'}
+                >
+                  {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={!userInput.trim() || isLoading}
+                  className="px-4 py-1.5 rounded-full bg-[#20140c] text-[#f2ca50] font-garamond font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-[#342014] transition-all active:scale-95 disabled:opacity-40"
+                >
+                  {isLoading ? (
+                    <>
+                      <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+                      <span>نفوذ جوهر در الیاف کاغذ...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Feather className="w-3.5 h-3.5" />
+                      <span>ثبت در اوراق کتاب (Inscribe)</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
 
           {speechError && (
-            <div className="flex items-center gap-1.5 text-xs text-rose-400 font-sans">
-              <span className="material-symbols-outlined text-[15px]">error</span>
-              <span>خطای تشخیص صوت: {speechError}</span>
-            </div>
-          )}
-
-          {/* Action Button & Voice Scribe Bar */}
-          <div className="flex items-center justify-between gap-3 pt-1">
-            {/* Free Speech Recognition Mic */}
-            <button
-              type="button"
-              onClick={toggleListening}
-              className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all shadow-sm ${
-                isListening
-                  ? 'bg-rose-950/80 border-rose-500 text-rose-300 animate-pulse'
-                  : 'bg-surface-container border-outline-variant/50 text-on-surface-variant hover:text-primary hover:border-primary/50'
-              }`}
-              title={isListening ? 'توقف ضبط صدا' : 'نگارش با قلم صوتی (رایگان)'}
-            >
-              {isListening ? (
-                <MicOff className="w-4 h-4" />
-              ) : (
-                <Mic className="w-4 h-4" />
-              )}
-            </button>
-
-            {/* Inscribe into Codex Primary Button */}
-            <button
-              type="submit"
-              disabled={!userInput.trim() || isLoading}
-              className="flex-1 py-3 px-5 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-garamond font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(242,202,80,0.35)] disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[0.98] hover:shadow-gold-glow"
-            >
-              {isLoading ? (
-                <>
-                  <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
-                  <span>در حال تحریر و ارزیابی مربی...</span>
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-[18px]">ink_pen</span>
-                  <span>ثبت در نسخه خطی (Inscribe into Codex)</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Toast Notification for Codex Merge */}
-          {showInscribeToast && (
-            <div className="p-2.5 rounded-lg bg-surface-container-highest border border-primary/40 text-primary font-garamond text-xs flex items-center justify-center gap-1.5 shadow-md animate-in fade-in duration-200">
-              <span className="material-symbols-outlined text-[16px]">done_all</span>
-              <span>جوهر زنده در کالبد کتاب جاری و وضعیت شخصی شما به‌روز شد.</span>
-            </div>
+            <p className="text-[11px] text-rose-700 font-sans">{speechError}</p>
           )}
         </form>
-      </section>
 
-      {/* ========================================================================= */}
-      {/* SECTION 3: LIVING SCHOLAR MARGIN ANNOTATION (Dynamic AI Coaching Bridge) */}
-      {/* ========================================================================= */}
-      {coachingResult && (
-        <section className="relative rounded-2xl bg-surface-container-high border-2 border-primary/50 p-6 sm:p-7 shadow-gold-glow animate-in fade-in slide-in-from-bottom-3 duration-300">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/40">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center border border-primary/40">
-                <Flame className="w-4 h-4 fill-primary" />
-              </div>
-              <div>
-                <span className="font-garamond text-base font-bold text-primary block leading-none">
-                  حکمت مربی هوش مصنوعی [SCHOLAR MARGIN ANNOTATION]
-                </span>
-                <span className="font-sans text-[10px] text-on-surface-variant">
-                  تحلیل صریح و دقیق مبتنی بر علوم رفتاری (&lt;۱۵۰ کلمه)
-                </span>
-              </div>
+        {/* Scholar Annotation (bleeds into paper below user confession) */}
+        {coachingResult && (
+          <div className="mt-4 pt-3 border-t-2 border-[#785b30]/40 animate-in fade-in duration-500">
+            <div className="flex items-center gap-1.5 mb-1 text-[#785b30]">
+              <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
+              <span className="font-garamond text-xs font-bold uppercase tracking-wider">
+                پاسخ زندهٔ مربی به این صفحه (Scholar Living Ink):
+              </span>
             </div>
 
-            <button
-              onClick={() => handleToggleReadAloud(coachingResult.coaching_response)}
-              className="p-2 rounded-full bg-surface-container border border-outline-variant/40 text-primary hover:text-white transition"
-              title="شنیدن تحلیل صوتی مربی"
-            >
-              <Volume2 className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Coaching Response Body */}
-          <div className="bg-surface-container-lowest/80 border border-outline-variant/40 rounded-xl p-4 mb-4">
-            <p className="text-sm sm:text-base text-on-surface leading-relaxed font-vazir">
-              {coachingResult.coaching_response}
-            </p>
-          </div>
-
-          {/* Next Strategic Question / Action */}
-          {coachingResult.next_question && (
-            <div className="flex items-start gap-2 bg-primary/10 border border-primary/30 rounded-xl p-3.5 text-xs text-primary mb-5 font-vazir">
-              <span className="font-bold font-garamond text-sm flex-shrink-0">گام راهبردی بعدی:</span>
-              <span className="leading-relaxed">{coachingResult.next_question}</span>
+            <div className="bg-[#eee4d0]/60 border-r-3 border-[#785b30] pr-3 py-2 rounded-l-md font-vazir text-xs sm:text-sm text-[#162744] leading-relaxed mb-2">
+              <LivingInkText
+                text={coachingResult.coaching_response}
+                speedMs={20}
+                inkColor="#162744"
+              />
             </div>
-          )}
 
-          {/* Proceed Button */}
-          <div className="flex justify-end">
-            {isLastModule ? (
-              <button
-                onClick={onShowBlueprint}
-                className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-garamond font-bold text-sm px-6 py-2.5 rounded-full shadow-gold-glow transition-all active:scale-95"
-              >
-                <span>مشاهده و دریافت سند زرین بلوپرینت</span>
-                <CheckCircle2 className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                onClick={onGoToNextModule}
-                className="flex items-center gap-2 bg-primary text-on-primary font-garamond font-bold text-sm px-5 py-2.5 rounded-full shadow-md transition-all active:scale-95 hover:bg-primary-container"
-              >
-                <span>گام بعدی در کتاب</span>
-                <ArrowLeft className="w-4 h-4" />
-              </button>
+            {coachingResult.next_question && (
+              <div className="font-garamond text-xs font-bold text-[#785b30] italic pr-2">
+                « گام بعدی: {coachingResult.next_question} »
+              </div>
             )}
           </div>
-        </section>
-      )}
+        )}
+      </div>
+
+      {/* Bottom Navigation of Left Page */}
+      <div className="flex items-center justify-between pt-2 border-t border-[#aa936d]/25 text-xs text-[#7d6542] font-garamond">
+        <span>صحیفه {moduleIndex * 2 + 2}</span>
+
+        {coachingResult ? (
+          isLastModule ? (
+            <button
+              onClick={() => triggerPageTurn(onShowBlueprint)}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#8c2a1e] text-[#ffe088] font-bold text-xs shadow-md hover:bg-[#a63325] transition-all active:scale-95"
+            >
+              <span>ورق زدن به طومار زرین بلوپرینت</span>
+              <CheckCircle2 className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={() => triggerPageTurn(onGoToNextModule)}
+              className="flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#20140c] text-[#f2ca50] font-bold text-xs shadow-md hover:bg-[#342014] transition-all active:scale-95"
+            >
+              <span>ورق زدن به فصل بعد</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </button>
+          )
+        ) : !isDoublePage ? (
+          <button
+            onClick={() => triggerPageTurn(() => setMobileLeaf(0))}
+            className="flex items-center gap-1 text-xs font-bold text-[#694e24] hover:text-[#22180f] transition-colors"
+          >
+            <ArrowRight className="w-3.5 h-3.5" />
+            <span>برگ قبلی درس</span>
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="h-[100dvh] w-full overflow-hidden flex flex-col items-center justify-center relative bg-[#0e1013] select-none p-2 sm:p-5">
+      {/* Warm Ambient Candlelight & Mahogany Desk Halo */}
+      <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-96 h-80 rounded-full bg-primary/10 blur-[100px]" />
+      <div className="pointer-events-none absolute bottom-0 right-0 w-80 h-80 rounded-full bg-[#574236]/15 blur-[100px]" />
+
+      {/* Discreet Silk Bookmark Ribbon to Close Book (at top corner outside the page) */}
+      <div className="absolute top-0 right-6 z-40 flex items-center gap-3">
+        {/* Subtle Audio Mute/Unmute toggle */}
+        <button
+          onClick={onToggleAudioMute}
+          className="mt-2 p-2 rounded-full bg-[#1e2023]/80 backdrop-blur-md text-[#d5c3aa] hover:text-[#f2ca50] border border-[#4d4635]/40 transition-colors shadow-md"
+          title={isAudioMuted ? 'فعال‌سازی خوانش صوتی' : 'بی‌صدا کردن خوانش'}
+        >
+          <Volume2 className={`w-4 h-4 ${isAudioMuted ? 'opacity-40' : 'text-primary'}`} />
+        </button>
+
+        {/* Hanging Bookmark Ribbon */}
+        <button
+          onClick={onCloseBook}
+          className="group relative flex flex-col items-center pt-0 transition-transform active:translate-y-1"
+          title="بستن کتاب و بازگشت به قفسه کتابخانه"
+        >
+          <div className="w-6 h-12 sm:h-14 bg-[#93000a] text-white rounded-b-sm shadow-[0_4px_12px_rgba(0,0,0,0.8)] flex flex-col justify-between items-center pb-1 border-x border-[#ffdad6]/20">
+            <Bookmark className="w-3.5 h-3.5 text-[#ffe088] mt-1" />
+            <div className="w-1.5 h-1.5 rounded-full bg-[#ffe088]" />
+          </div>
+          <span className="font-garamond text-[10px] text-[#dec1b1] group-hover:text-primary mt-1 font-bold">
+            بستن کتاب
+          </span>
+        </button>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* THE PHYSICAL NON-SCROLLABLE CODEX (Double-Page vs Single-Page)             */}
+      {/* ========================================================================= */}
+      <div
+        className={`relative transition-all duration-300 ${
+          isTurningPage ? 'scale-[0.985] opacity-90' : 'scale-100 opacity-100'
+        } ${
+          isDoublePage
+            ? 'w-full max-w-5xl h-[88vh] max-h-[720px] flex shadow-[0_30px_70px_rgba(0,0,0,0.85),0_0_90px_rgba(25,16,10,0.5)] rounded-2xl overflow-hidden border border-[#523e2b]/60'
+            : 'w-full max-w-md h-[92vh] flex shadow-2xl rounded-xl overflow-hidden border border-[#523e2b]/60'
+        }`}
+      >
+        {isDoublePage ? (
+          <>
+            {/* RIGHT PAGE (In RTL: Leaf A - Classical Chapter Lesson) */}
+            <div className="w-1/2 h-full bg-[#f4eee0] relative overflow-hidden rounded-r-xl border-r border-[#d5c3aa]">
+              {/* Paper Tooth Texture */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#d5c3aa_1px,transparent_1px)] [background-size:14px_14px] opacity-40 mix-blend-multiply" />
+              {/* Spine Gutter Shadow (Left edge of Right Page) */}
+              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#20140c]/25 via-[#20140c]/10 to-transparent z-10" />
+              {/* Outer Deckle Shadow */}
+              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-[#20140c]/15 to-transparent z-10" />
+              {renderRightPage()}
+            </div>
+
+            {/* CENTER SPINE CREASE (Binding Valley) */}
+            <div className="w-6 h-full bg-gradient-to-r from-[#20140c]/20 via-[#120a05]/45 to-[#20140c]/20 absolute left-1/2 -translate-x-1/2 z-20 pointer-events-none" />
+
+            {/* LEFT PAGE (In RTL: Leaf B - Inscription & Living Scholar Commentary) */}
+            <div className="w-1/2 h-full bg-[#f4eee0] relative overflow-hidden rounded-l-xl border-l border-[#d5c3aa]">
+              {/* Paper Tooth Texture */}
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#d5c3aa_1px,transparent_1px)] [background-size:14px_14px] opacity-40 mix-blend-multiply" />
+              {/* Spine Gutter Shadow (Right edge of Left Page) */}
+              <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#20140c]/25 via-[#20140c]/10 to-transparent z-10" />
+              {/* Outer Deckle Shadow */}
+              <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-[#20140c]/15 to-transparent z-10" />
+              {renderLeftPage()}
+            </div>
+          </>
+        ) : (
+          /* SINGLE PAGE (Mobile / Vertical View) */
+          <div className="w-full h-full bg-[#f4eee0] relative overflow-hidden rounded-xl border border-[#d5c3aa]">
+            {/* Paper Tooth Texture */}
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#d5c3aa_1px,transparent_1px)] [background-size:14px_14px] opacity-40 mix-blend-multiply" />
+            {/* Right Spine Gutter */}
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-7 bg-gradient-to-l from-[#20140c]/20 via-[#20140c]/10 to-transparent z-10" />
+            {/* Left Edge Shadow */}
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-[#20140c]/12 to-transparent z-10" />
+
+            {mobileLeaf === 0 ? renderRightPage() : renderLeftPage()}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

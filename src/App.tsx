@@ -116,26 +116,28 @@ export const App: React.FC = () => {
         isCandlelit ? 'candle-glow' : ''
       }`}
     >
-      {/* Header */}
-      <Header
-        currentBook={currentBook}
-        currentModuleIndex={currentModuleIndex}
-        onBackToBooks={handleBackToBooks}
-        onToggleStateDrawer={() => setIsStateDrawerOpen((prev) => !prev)}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        userStateKeyCount={
-          Object.keys(activeUserState).filter(
-            (k) => activeUserState[k] && k !== 'status'
-          ).length
-        }
-        isAudioMuted={isAudioMuted}
-        onToggleAudioMute={() => setIsAudioMuted((prev) => !prev)}
-        isCandlelit={isCandlelit}
-        onToggleCandlelight={() => setIsCandlelit((prev) => !prev)}
-      />
+      {/* Header (Only displayed in catalog mode to keep the opened book pure and uncluttered) */}
+      {viewMode === 'catalog' && (
+        <Header
+          currentBook={currentBook}
+          currentModuleIndex={currentModuleIndex}
+          onBackToBooks={handleBackToBooks}
+          onToggleStateDrawer={() => setIsStateDrawerOpen((prev) => !prev)}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+          userStateKeyCount={
+            Object.keys(activeUserState).filter(
+              (k) => activeUserState[k] && k !== 'status'
+            ).length
+          }
+          isAudioMuted={isAudioMuted}
+          onToggleAudioMute={() => setIsAudioMuted((prev) => !prev)}
+          isCandlelit={isCandlelit}
+          onToggleCandlelight={() => setIsCandlelit((prev) => !prev)}
+        />
+      )}
 
       {/* Main View Area */}
-      <main className="flex-1 pb-16">
+      <main className={`flex-1 ${viewMode === 'catalog' ? 'pb-16' : 'overflow-hidden'}`}>
         {viewMode === 'catalog' && (
           <BookSelector
             books={BOOKS_CURRICULUM}
@@ -154,7 +156,9 @@ export const App: React.FC = () => {
             onCompleteModuleTurn={handleCompleteModuleTurn}
             onGoToNextModule={handleGoToNextModule}
             onShowBlueprint={handleShowBlueprint}
+            onCloseBook={handleBackToBooks}
             isAudioMuted={isAudioMuted}
+            onToggleAudioMute={() => setIsAudioMuted((prev) => !prev)}
           />
         )}
 

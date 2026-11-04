@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BookCurriculum } from '../types/curriculum';
 import { Sparkles, ArrowLeft, BookOpen, Flame, CloudRain } from 'lucide-react';
+import { playPageTurnSound } from '../services/soundService';
 
 interface BookSelectorProps {
   books: BookCurriculum[];
@@ -20,6 +21,18 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
   const [hoveredBookId, setHoveredBookId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isRainPlaying, setIsRainPlaying] = useState<boolean>(false);
+  const [openingBook, setOpeningBook] = useState<BookCurriculum | null>(null);
+
+  const handleBookClick = (book: BookCurriculum) => {
+    if (openingBook) return;
+    setOpeningBook(book);
+    playPageTurnSound();
+    // After book pulls out and swings open, transition to open reading codex
+    setTimeout(() => {
+      onSelectBook(book);
+      setOpeningBook(null);
+    }, 750);
+  };
 
   // Book Spines physical styling mapping (matching Magic Books Scriptorium)
   const SPINE_STYLES: Record<string, {
@@ -185,7 +198,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
                 key={book.id}
                 onMouseEnter={() => setHoveredBookId(book.id)}
                 onMouseLeave={() => setHoveredBookId(null)}
-                onClick={() => onSelectBook(book)}
+                onClick={() => handleBookClick(book)}
                 className={`group relative flex flex-col items-center cursor-pointer transition-all duration-300 z-20 ${
                   isHovered ? '-translate-y-5 scale-[1.03]' : 'hover:-translate-y-2'
                 }`}
@@ -321,7 +334,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
             return (
               <div
                 key={book.id}
-                onClick={() => onSelectBook(book)}
+                onClick={() => handleBookClick(book)}
                 className="group relative bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 hover:border-primary/60 rounded-xl p-5 transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-sm hover:shadow-gold-glow"
               >
                 <div>
@@ -422,6 +435,60 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 3D Book Drag Out and Opening Animation Overlay */}
+      {openingBook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="relative flex flex-col items-center">
+            {/* 3D Book Container */}
+            <div className="relative w-64 h-88 sm:w-72 sm:h-96 [perspective:1200px]">
+              {/* Back Page / Body */}
+              <div className="absolute inset-0 bg-[#f4eee0] rounded-r-lg rounded-l-sm shadow-2xl p-6 flex flex-col justify-between border border-[#d5c3aa]">
+                <div className="flex flex-col items-center text-center pt-8">
+                  <span className="font-garamond text-xs text-[#785b30] uppercase tracking-widest mb-2 font-bold">
+                    {openingBook.titleEn}
+                  </span>
+                  <h3 className="font-garamond text-xl font-bold text-[#22180f]">
+                    {openingBook.titleFa}
+                  </h3>
+                  <div className="w-16 h-0.5 bg-[#d4af37] my-3" />
+                  <p className="font-vazir text-xs text-[#694e24] leading-relaxed">
+                    در حال گشودن صفحات پاپیروس و جریان جوهر زنده...
+                  </p>
+                </div>
+                <div className="text-center font-garamond text-xs text-[#846b4b] italic pb-4">
+                  Sanctum Codex Folio
+                </div>
+              </div>
+
+              {/* Front Cover Flipping Open */}
+              <div className="absolute inset-0 origin-right transition-transform duration-700 ease-out [transform-style:preserve-3d] [transform:rotateY(-140deg)] bg-gradient-to-l from-[#20140c] via-[#3a2214] to-[#20140c] rounded-r-lg rounded-l-sm shadow-2xl p-6 flex flex-col justify-between border-2 border-[#d4af37]/60">
+                <div className="w-full flex justify-between items-center text-[#d4af37]">
+                  <span className="material-symbols-outlined text-[20px]">auto_stories</span>
+                  <span className="font-garamond text-xs font-bold tracking-widest uppercase">
+                    CODEX
+                  </span>
+                </div>
+                <div className="text-center">
+                  <h3 className="font-garamond text-2xl font-extrabold text-[#f2ca50] mb-1 drop-shadow">
+                    {openingBook.titleFa}
+                  </h3>
+                  <p className="font-sans text-xs text-[#dec1b1]">
+                    {openingBook.authorFa}
+                  </p>
+                </div>
+                <div className="w-full text-center text-[#d4af37] text-xs font-garamond">
+                  ✦ {openingBook.frameworkNameFa} ✦
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-8 text-primary font-garamond text-base font-bold animate-pulse">
+              در حال بیرون کشیدن کتاب از قفسه و گشودن صفحات...
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
