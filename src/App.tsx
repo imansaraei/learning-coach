@@ -111,11 +111,15 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div
-      className={`min-h-screen bg-surface text-on-surface flex flex-col font-vazir selection:bg-primary selection:text-on-primary transition-all duration-700 ${
-        isCandlelit ? 'candle-glow' : ''
-      }`}
-    >
+    <div className="min-h-screen bg-surface text-on-surface flex flex-col font-vazir selection:bg-primary selection:text-on-primary transition-all duration-700 relative overflow-hidden">
+      {/* Background Ambient Candlelight Orbs (scoped flicker to desk only; zero page jitter) */}
+      {isCandlelit && (
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          <div className="desk-ambient-glow absolute -top-24 left-1/2 -translate-x-1/2 w-[720px] h-[480px] rounded-full bg-[radial-gradient(circle,rgba(242,202,80,0.12)_0%,transparent_70%)]" />
+          <div className="desk-ambient-glow absolute -bottom-32 right-12 w-[600px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(212,143,56,0.08)_0%,transparent_70%)]" />
+        </div>
+      )}
+
       {/* Header (Only displayed in catalog mode to keep the opened book pure and uncluttered) */}
       {viewMode === 'catalog' && (
         <Header
@@ -137,7 +141,7 @@ export const App: React.FC = () => {
       )}
 
       {/* Main View Area */}
-      <main className={`flex-1 ${viewMode === 'catalog' ? 'pb-16' : 'overflow-hidden'}`}>
+      <main className={`relative z-10 flex-1 ${viewMode === 'catalog' ? 'pb-16' : 'overflow-hidden'}`}>
         {viewMode === 'catalog' && (
           <BookSelector
             books={BOOKS_CURRICULUM}
