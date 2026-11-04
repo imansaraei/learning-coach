@@ -164,15 +164,37 @@ export async function getDynamicCoachingTurn(
 ): Promise<DynamicCoachingResult> {
   const apiKey = getStoredApiKey();
 
-  // If no API key, use immediate zero-cost behavioral coach
-  if (!apiKey) {
-    return generateOfflineCoachingResponse(book, module, userInput, currentUserState);
+  // Strategy 1: Try Cloudflare Edge Pages Function (/api/coach)
+  // Handles server GEMINI_API_KEY and avoids browser CORS/region restrictions
+  try {
+    const edgeResponse = await fetch('/api/coach', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        book,
+        module,
+        userInput,
+        currentUserState,
+        clientApiKey: apiKey,
+      }),
+    });
+
+    if (edgeResponse.ok) {
+      const edgeData = (await edgeResponse.json()) as DynamicCoachingResult;
+      if (edgeData && edgeData.coaching_response) {
+        return edgeData;
+      }
+    }
+  } catch (_edgeErr) {
+    // Proceed to direct client SDK or offline fallback
   }
 
-  try {
-    const ai = new GoogleGenAI({ apiKey });
+  // Strategy 2: Client-side Direct Google Gemini SDK call (if API key is present)
+  if (apiKey) {
+    try {
+      const ai = new GoogleGenAI({ apiKey });
 
-    const systemInstruction = `شما یک مربی ارشد و تیزهوش در حوزه علوم رفتاری و طراحی عادت هستید (مشابه ترکیب Angela Duckworth، James Clear، Daniel Kahneman و Charles Duhigg).
+      const systemInstruction = `شما یک مربی ارشد و تیزهوش در حوزه علوم رفتاری و طراحی عادت هستید (مشابه ترکیب Angela Duckworth، James Clear، Daniel Kahneman و Charles Duhigg).
 رسالت شما: بررسی پاسخ کاربر بر اساس مدل ذهنی کتاب "${book.titleFa}" (مدل: ${book.frameworkNameFa}) در گام "${module.title}".
 
 قوانین اکید:
@@ -182,7 +204,7 @@ export async function getDynamicCoachingTurn(
 ۴. وضعیت کاربر (updated_user_state) را به طور تمیز و ساختاریافته آپدیت کنید. فیلد کلیدی "${module.interactivePrompt.stateTargetKey}" را در آن ثبت یا غنی‌سازی کنید.
 ۵. خروجی صرفاً یک آبجکت JSON معتبر مطابق با اسکیما باشد.`;
 
-    const prompt = `اطلاعات ماژول فعلی:
+      const prompt = `اطلاعات ماژول فعلی:
 - کتاب: ${book.titleFa}
 - عنوان درس: ${module.title}
 - مفهوم ذهنی: ${module.staticCoreLesson.concept}
@@ -197,58 +219,58 @@ ${JSON.stringify(currentUserState, null, 2)}
 وظیفه شما:
 یک ارزیابی روان‌شناختی/رفتاری تیز و بدون تعارف بنویسید (حداکثر ۱۵۰ کلمه فارسی)، سوال هدایت‌کننده بعدی را مشخص کنید و آبجکت وضعیت کاربر را به‌روزرسانی کنید.`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        systemInstruction,
-        temperature: 0.3,
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            coaching_response: {
-              type: Type.STRING,
-              description: 'تحلیل دقیق و فشرده مربی به زبان فارسی بدون تملق، حداکثر ۱۵۰ کلمه'
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          systemInstruction,
+          temperature: 0.3,
+          responseMimeType: 'application/json',
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              coaching_response: {
+                type: Type.STRING,
+                description: 'تحلیل دقیق و فشرده مربی به زبان فارسی بدون تملق، حداکثر ۱۵۰ کلمه'
+              },
+              next_question: {
+                type: Type.STRING,
+                description: 'سوال راهبردی برای مرحله بعدی'
+              },
+              updated_user_state: {
+                type: Type.OBJECT,
+                description: 'وضعیت ادغام‌شده و جدید کاربر بر اساس مدل ذهنی'
+              }
             },
-            next_question: {
-              type: Type.STRING,
-              description: 'سوال راهبردی برای مرحله بعدی'
-            },
-            updated_user_state: {
-              type: Type.OBJECT,
-              description: 'وضعیت ادغام‌شده و جدید کاربر بر اساس مدل ذهنی'
-            }
-          },
-          required: ['coaching_response', 'next_question', 'updated_user_state']
+            required: ['coaching_response', 'next_question', 'updated_user_state']
+          }
         }
+      });
+
+      const text = response.text;
+      if (text) {
+        const parsed = JSON.parse(text) as {
+          coaching_response: string;
+          next_question: string;
+          updated_user_state: Record<string, any>;
+        };
+
+        return {
+          coaching_response: parsed.coaching_response,
+          next_question: parsed.next_question,
+          updated_user_state: {
+            ...currentUserState,
+            ...parsed.updated_user_state,
+            [module.interactivePrompt.stateTargetKey]: userInput
+          },
+          is_final_blueprint: module.id === book.modules.length
+        };
       }
-    });
-
-    const text = response.text;
-    if (!text) {
-      throw new Error('Empty response from Gemini API');
+    } catch (sdkError) {
+      console.warn('Client Gemini SDK call failed, falling back to smart local coach:', sdkError);
     }
-
-    const parsed = JSON.parse(text) as {
-      coaching_response: string;
-      next_question: string;
-      updated_user_state: Record<string, any>;
-    };
-
-    return {
-      coaching_response: parsed.coaching_response,
-      next_question: parsed.next_question,
-      updated_user_state: {
-        ...currentUserState,
-        ...parsed.updated_user_state,
-        [module.interactivePrompt.stateTargetKey]: userInput
-      },
-      is_final_blueprint: module.id === book.modules.length
-    };
-  } catch (error) {
-    console.warn('Gemini API call failed or encountered error, falling back to smart local coach:', error);
-    // Graceful fallback to offline coach so user flow is never disrupted
-    return generateOfflineCoachingResponse(book, module, userInput, currentUserState);
   }
+
+  // Strategy 3: Graceful fallback to smart local behavioral science coach
+  return generateOfflineCoachingResponse(book, module, userInput, currentUserState);
 }
