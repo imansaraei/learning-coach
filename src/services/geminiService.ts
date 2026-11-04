@@ -1,5 +1,10 @@
 import { GoogleGenAI, Type } from '@google/genai';
-import { DynamicCoachingResult, BookCurriculum, ModuleData } from '../types/curriculum';
+import {
+  DynamicCoachingResult,
+  BookCurriculum,
+  ModuleData,
+  GeneratedModuleContent
+} from '../types/curriculum';
 
 // Storage key for user-provided Gemini API key
 const STORAGE_KEY = 'learning_coach_gemini_api_key';
@@ -19,14 +24,278 @@ export function saveApiKey(key: string): void {
 }
 
 /**
+ * High-fidelity offline chapter synthesizer
+ * Produces authentic, author-tailored next chapter content based on reader's confession.
+ */
+function synthesizeOfflineChapter(
+  book: BookCurriculum,
+  _currentModule: ModuleData,
+  nextModule: ModuleData,
+  cleanInput: string
+): GeneratedModuleContent {
+  const shortSnippet = cleanInput.length > 28 ? cleanInput.slice(0, 28) + '...' : cleanInput;
+
+  switch (book.id) {
+    case 'situated':
+      if (nextModule.id === 2) {
+        return {
+          headline: `کالبدشکافی ریشه رفتاری و مهندسی بالادست پیرامون «${shortSnippet}»`,
+          concept: `اعتراف صادقانه شما پیرامون «${cleanInput}»، صحنهٔ فیزیکی جعبه ۱ را عریان ساخت. در مکتب موقعیت‌مندی آنجلا داک‌ورث، این رفتار نه نشانگر نقص اراده، بلکه برآمده از دسترسی بدون اصطکاک به محرک است.\n\nمهندسی بالادست (Upstream Design) یادآور می‌شود که کنترل خود پیش از هجوم وسوسه رخ می‌دهد. اگر برای دسترسی به این محرک، حداقل ۲۰ ثانیه مانع فیزیکی بسازید، زنجیرهٔ خودکار تصمیم‌گیری در مغز شما قطع شده و آرامش ساختاری جایگزین جنگ فرسایشی اراده خواهد شد.`,
+          keyTakeaway: `مهار پایدار «${shortSnippet}» با جنگ اراده ناممکن است؛ با افزودن ۲۰ ثانیه اصطکاک فیزیکی به محیط محقق می‌شود.`,
+          question: `برای دور زدن وسوسه «${shortSnippet}»، چه مانع فیزیکی عینی و غیرقابل بازگشتی در محیط می‌سازید که عبور از آن مستلزم تلاش بدنی باشد؟`,
+          placeholder: `مثال: تغییر محل نگهداری وسایل مرتبط با ${shortSnippet} یا انتقال شارژر/ابزار به اتاق دیگر...`,
+          diagramSteps: [
+            { label: 'جعبه ۱: صحنه فیزیکی', desc: `حذف دسترسی آزاد به محرک پیرامون «${shortSnippet}»` },
+            { label: 'جعبه ۲: وقفه شناختی', desc: 'مهار شتابزده واکنش و ایجاد ۲۰ ثانیه تأمل' },
+            { label: 'جعبه ۳: پاسخ رفتاری', desc: 'انتخاب آگاهانه به جای تکانه خودکار' }
+          ]
+        };
+      } else if (nextModule.id === 3) {
+        return {
+          headline: `معماری اهرم‌های اجتماعی و تعهد شفاف برای «${shortSnippet}»`,
+          concept: `موانع فیزیکی گام نخست هستند، اما انسان موجودی عمیقاً اجتماعی است. آنجلا داک‌ورث تاکید دارد که وقتی خستگی اراده در پایان روز بر شما غلبه کند، پایبندی به مانع «${cleanInput}» شکننده خواهد شد.\n\nاهرم‌های اجتماعی (Social Levers) نیروی پرقدرت نگاه دیگران را به میدان می‌آورند. وقتی تعهد به این تغییر را به یک ناظر معتمد یا همتای امین گزارش دهید، هزینهٔ روانی نقض عهد از لذت زودگذر وسوسه فراتر می‌رود.`,
+          keyTakeaway: `وقتی تعهد به مهار «${shortSnippet}» شفاف و گزارش‌پذیر شود، حمایت اجتماعی نیروی اراده را مضاعف می‌سازد.`,
+          question: `کدام فرد معتمد (همکار، دوست یا پارتنر) می‌تواند ناظر شفافیت و شریک پاسخگویی شما در مهار «${shortSnippet}» باشد؟`,
+          placeholder: `مثال: ارسال پیام گزارش روزانه به دوستم در خصوص پایبندی به مهار ${shortSnippet}...`,
+          diagramSteps: [
+            { label: 'فضای شخصی', desc: `استقرار مانع فیزیکی اولیه در برابر «${shortSnippet}»` },
+            { label: 'ناظر و شریک تعهد', desc: 'گزارش‌دهی شفاف و مستقیم به فرد معتمد' },
+            { label: 'هنجارسازی محیطی', desc: 'تبدیل خویشتن‌داری به قاعدهٔ بدیهی زندگی' }
+          ]
+        };
+      } else {
+        return {
+          headline: `تدوین شیوه‌نامه عملیاتی و پروتکل شکست‌ناپذیر ۴۸ ساعته پیرامون «${shortSnippet}»`,
+          concept: `تمامی قطعات معماری موقعیت اکنون در دستان شماست. از تفکیک فیزیکی تا اهرم‌سازی اجتماعی پیرامون «${cleanInput}»، زمان آن فرا رسیده که این سیستم در دنیای واقعی به بوته آزمون گذاشته شود.\n\nبه جای تعهدات مبهم مادام‌العمر، یک پروتکل آزمایشی ۴۸ ساعته طراحی می‌کنیم. در این دو شبانه‌روز، چیدمان جدید محیط آزمایش شده و بدون هیچ اتکایی به اراده، میزان اصطکاک رفتارهای مخرب و سهولت رفتارهای سازنده ارزیابی می‌گردد.`,
+          keyTakeaway: `معماری جدید را با آزمایش ۴۸ ساعته بسنجید؛ موفقیت حاصل طراحی بالادست است نه فشار اراده.`,
+          question: `طی ۴۸ ساعت آینده چه عمل فیزیکی مشخصی (زیر ۵ دقیقه) برای قفل کردن این محیط جدید انجام می‌دهید؟`,
+          placeholder: `مثال: جمع‌آوری فوری ابزارهای وسوسه‌انگیز و شروع رسمی پروتکل ۴۸ ساعته...`,
+          diagramSteps: [
+            { label: 'تست ۴۸ ساعته', desc: `آزمایش عملی موانع فیزیکی پیرامون «${shortSnippet}»` },
+            { label: 'سنجش اصطکاک', desc: 'بررسی میزان آسانی مقاومت و حذف تکانه' },
+            { label: 'تثبیت پایدار', desc: 'تبدیل چیدمان نو به استاندارد دائمی محیط زیست' }
+          ]
+        };
+      }
+
+    case 'power-of-habit':
+      if (nextModule.id === 2) {
+        return {
+          headline: `کالبدشکافی نشانه محرک و میل عصبی در رفتار «${shortSnippet}»`,
+          concept: `رفتار «${cleanInput}» که به آن اعتراف کردید، به عنوان یک روتین خودکار در گانگلیای پایه‌ای مغزتان حک شده است. چارلز داهیگ اثبات می‌کند که هیچ عادتی بدون یک نشانهٔ دقیق (Cue) بیدار نمی‌شود.\n\nمغز برای صرفه‌جویی در انرژی شناختی، این چرخه را در مواجهه با یک شرایط خاص فعال می‌سازد. شناسایی مکان، ساعت، هیجان یا حضور افراد در لحظهٔ آغاز «${shortSnippet}»، کلید گشودن قفل این ولع ناخودآگاه است.`,
+          keyTakeaway: `شما نمی‌توانید رفتار «${shortSnippet}» را ریشه‌کن کنید، مگر آنکه نشانه‌ای که جرقه آن را می‌زند دقیقاً شکار کنید.`,
+          question: `نشانهٔ دقیق محرک (زمان، مکان، حالت روحی یا رویداد قبلی) که رفتار «${shortSnippet}» را کلید می‌زند چیست؟`,
+          placeholder: `مثال: هر روز ساعت ۴ بعدازظهر در محل کار وقتی احساس افت انرژی و خستگی می‌کنم...`,
+          diagramSteps: [
+            { label: '۱. نشانه (Cue)', desc: `جرقه زمانی یا روانی آغازگر «${shortSnippet}»` },
+            { label: '۲. ولع ناخودآگاه', desc: 'تمایل به تسکین سریع یا تغییر حال و هوا' },
+            { label: '۳. روتین خودکار', desc: `اجرای ناخودآگاه رفتار «${shortSnippet}»` }
+          ]
+        };
+      } else if (nextModule.id === 3) {
+        return {
+          headline: `رمزگشایی از پاداش عصب‌شناختی واقعی در چرخه «${shortSnippet}»`,
+          concept: `با آشکار شدن نشانهٔ محرک پیرامون «${cleanInput}»، به هستهٔ پنهان حلقه عادت می‌رسیم: پاداش عصبی. آنچه مغز شما در پی آن است، خودِ رفتار فرساینده نیست، بلکه حس روانی پس از آن است.\n\nداهیگ نشان می‌دهد که عادت‌ها تسکین‌دهندهٔ یک نیاز زیستی یا روانی هستند. آیا مغز شما در طلب آرامش است؟ یا وقفه ذهنی؟ یا احساس پیوند با دیگران؟ پاسخ به این پرسش، مسیر بازنویسی روتین را هموار می‌سازد.`,
+          keyTakeaway: `پاداش مغز در چرخه «${shortSnippet}»، نیازی اصیل است که باید از مسیر سالمی تامین گردد.`,
+          question: `پاداش واقعی و نیاز عصبی پنهان در پس «${shortSnippet}» چیست؟ تسکین موقت، دوری از کار، یا شارژ انرژی؟`,
+          placeholder: `مثال: فرار از فشار سنگین تصمیم‌گیری و چند دقیقه استراحت حسی...`,
+          diagramSteps: [
+            { label: 'نشانه فعال‌شده', desc: `وقوع شرایط محرک پیرامون «${shortSnippet}»` },
+            { label: 'جستجوی پاداش', desc: 'تقاضای دوپامین و رفع تنش روحی' },
+            { label: 'تثبیت لذت', desc: 'کسب پاداش و قفل شدن مجدد مسیر عصبی' }
+          ]
+        };
+      } else {
+        return {
+          headline: `کاربست قانون طلایی تغییر: روتین جایگزین برای «${shortSnippet}»`,
+          concept: `قانون طلایی تغییر عادت چارلز داهیگ می‌گوید: نشانه را نگه دارید، پاداش را دست‌نخورده حفظ کنید، اما روتین را بازنویسی نمایید. پاداش «${cleanInput}» قطب‌نمای ما برای این مهندسی مجدد است.\n\nبه جای سرکوب نیاز مغز، رفتاری سازنده و فوری طراحی می‌کنیم که همان حس تسکین را به سیستم پاداش هدیه دهد، بدون آنکه عواقب ویرانگر رفتار کهنه را بر دوش زندگی بگذارد.`,
+          keyTakeaway: `همان نشانه، همان پاداش، روتینی بازطراحی‌شده؛ راز ماندگاری تغییر در مغز همین است.`,
+          question: `چه رفتار جایگزین سالم و بدون اصطکاکی می‌تواند همان پاداش را در مواجهه با نشانه «${shortSnippet}» بازتولید کند؟`,
+          placeholder: `مثال: ترک میز کار و ۵ دقیقه قدم زدن در هوای آزاد همراه با نوشیدن آب...`,
+          diagramSteps: [
+            { label: 'نشانه پایدار', desc: `وقوع محرک آغازگر «${shortSnippet}»` },
+            { label: 'روتین جایگزین', desc: 'رفتار نو با اصطکاک اندک و پاداش فوری' },
+            { label: 'پاداش پایدار', desc: 'تامین نیاز زیستی بدون تخریب روان و تمرکز' }
+          ]
+        };
+      }
+
+    case 'atomic-habits':
+      if (nextModule.id === 2) {
+        return {
+          headline: `انباشت عادات و ساختن لنگر رفتاری برای «${shortSnippet}»`,
+          concept: `با پیوند هویت به اعتراف شما پیرامون «${cleanInput}»، جیمز کلیر یادآور می‌شود که عادت‌های تازه بدون تکیه‌گاه به سرعت محو می‌شوند. ذهن نیازمند نقطه‌ای امن برای استقرار این رفتار نو است.\n\nقانون انباشت عادات (Habit Stacking) این عمل را به تنومندترین درخت عادت‌های روزمره‌تان گره می‌زند. وقتی رفتار جدید مستقیماً پس از یک عمل قطعی هرروزه قرار گیرد، مقاومت شناختی آغاز ناپدید می‌شود.`,
+          keyTakeaway: `بهترین بستر برای نهادینه‌سازی «${shortSnippet}»، زنجیر کردن آن به عملی است که هم‌اکنون خودکار انجام می‌دهید.`,
+          question: `این رفتار مرتبط با «${shortSnippet}» را دقیقاً پس از کدام کار قطعی روزانه (مسواک، قهوه، نشستن پشت میز) لنگر می‌اندازید؟`,
+          placeholder: `مثال: بلافاصله بعد از بستن درب آپارتمان در ابتدای صبح، ۲ دقیقه...`,
+          diagramSteps: [
+            { label: 'عادت لنگر', desc: 'رفتار قطعی و جاری که هر روز رخ می‌دهد' },
+            { label: 'نقطه پیوند', desc: `آغاز فوری اقدام پیرامون «${shortSnippet}»` },
+            { label: 'عادت تازه', desc: 'تکرار مداوم تا تبدیل به پیوند عصبی استوار' }
+          ]
+        };
+      } else if (nextModule.id === 3) {
+        return {
+          headline: `مهندسی قانون ۲ دقیقه: صفر کردن اصطکاک آغاز برای «${shortSnippet}»`,
+          concept: `با ایجاد لنگر پیرامون «${cleanInput}»، نوبت به غلبه بر مقاومت آغاز می‌رسد. جیمز کلیر می‌نویسد: یک عادت پیش از آنکه بتواند بهبود یابد، ابتدا باید متولد شود و استمرار یابد.\n\nقانون ۲ دقیقه دروازه ورود به رفتار است. اگر شکل اولیهٔ این عمل در کمتر از ۱۲۰ ثانیه قابل اجرا باشد، ذهن در برابر آن سنگ‌اندازی نخواهد کرد و هویت فرد کنشگر روزبه‌روز پررنگ‌تر خواهد شد.`,
+          keyTakeaway: `رفتار «${shortSnippet}» را آن‌قدر خرد کنید که رد کردن آن برای ذهن ناممکن به نظر برسد.`,
+          question: `نسخه ۲ دقیقه‌ای و فوق‌ساده این رفتار پیرامون «${shortSnippet}» چیست که تحت هر شرایطی بتوانید انجامش دهید؟`,
+          placeholder: `مثال: فقط باز کردن صفحه مطالعه و خواندن یک بند، یا فقط پوشیدن لباس ورزشی...`,
+          diagramSteps: [
+            { label: 'دروازه ۲ دقیقه‌ای', desc: `شروع فوق‌سریع «${shortSnippet}» در کمتر از ۱۲۰ ثانیه` },
+            { label: 'حذف مقاومت', desc: 'بی‌اثر کردن بهانه‌های ذهن برای به تعویق انداختن' },
+            { label: 'تثبیت استمرار', desc: 'تثبیت ریتم روزانه بدون صرف ذخایر اراده' }
+          ]
+        };
+      } else if (nextModule.id === 4) {
+        return {
+          headline: `معماری محیط و نشانه‌های دیداری آشکار برای «${shortSnippet}»`,
+          concept: `شما نسخه خرد «${cleanInput}» را آماده کرده‌اید، اما اگر نشانه‌ها در محیط مخفی بمانند، شلوغی روزمره آن را خواهد بلعید. جیمز کلیر قانون اول تغییر را یادآور می‌شود: نشانه‌ها را آشکار و دیداری کنید.\n\nمحیط شما مربی خاموش رفتارهای شماست. قرار دادن محرک فیزیکی این عمل در کانون دید مستقیم، اتکا به حافظه و یادآوری را بی‌اثر کرده و اقدام را به طبیعی‌ترین پاسخ فضا بدل می‌سازد.`,
+          keyTakeaway: `چیدمان اتاق و میز کار باید قبل از تصمیم ارادی، مسیر عمل به «${shortSnippet}» را دیکته کند.`,
+          question: `چگونه نشانه فیزیکی مربوط به «${shortSnippet}» را در کانون دید روزمره‌تان می‌گذارید تا فراموش کردنش ناممکن شود؟`,
+          placeholder: `مثال: قرار دادن دفتر یا وسیله مورد نظر وسط میز کار پیش از خواب...`,
+          diagramSteps: [
+            { label: 'نشانه دیداری واضح', desc: `رویت بی‌واسطه محرک «${shortSnippet}» در محیط` },
+            { label: 'کاهش گام‌های دسترسی', desc: 'آماده‌سازی پیشاپیش تمام ابزارهای لازم' },
+            { label: 'انتخاب پیش‌فرض', desc: 'تبدیل رفتار به سهل‌ترین کنش در دسترس' }
+          ]
+        };
+      } else {
+        return {
+          headline: `سنجش پیشرفت و آزمون ۴۸ ساعته سیستم عادات پیرامون «${shortSnippet}»`,
+          concept: `هویت، لنگر، نسخه ۲ دقیقه‌ای و نشانهٔ آشکار پیرامون «${cleanInput}» دست در دست هم نهاده‌اند. اکنون زمان تبدیل این زنجیره به یک سیستم خودپایدار است.\n\nجیمز کلیر بر قانون «هرگز دو بار متوالی زنجیره را قطع نکن» تاکید می‌ورزد. ثبت بصری پیروزی‌های کوچک در ۴۸ ساعت آینده، به مغز شواهد عینی از توانایی تغییر می‌دهد.`,
+          keyTakeaway: `هر تکرار «${shortSnippet}» در ۴۸ ساعت آینده، یک رأی قطعی به هویت نوین شما در این سامانه است.`,
+          question: `معیار ثبت بصری و برنامه آزمون ۴۸ ساعته شما برای ارزیابی این سیستم عادات چیست؟`,
+          placeholder: `مثال: علامت‌گذاری روزانه روی تقویم بلافاصله پس از انجام ۲ دقیقه‌ای...`,
+          diagramSteps: [
+            { label: 'اجرای ۲ دقیقه‌ای', desc: `آغاز بی‌اصطکاک «${shortSnippet}»` },
+            { label: 'ثبت بصری پیروزی', desc: 'مشاهده پیشرفت و تغذیه حس شایستگی' },
+            { label: 'تثبیت هویت نو', desc: 'تبدیل تمرین به بخشی جدایی‌ناپذیر از خود' }
+          ]
+        };
+      }
+
+    case 'thinking-fast-slow':
+      if (nextModule.id === 2) {
+        return {
+          headline: `توهم قطعیت و پدیده WYSIATI پیرامون قضاوت «${shortSnippet}»`,
+          concept: `اعتراف شما به تصمیم «${cleanInput}»، پرده از شتاب‌زدگی سیستم ۱ برداشت. دانیل کانمن پدیده WYSIATI (هرچه می‌بینید تمام واقعیت است) را سرچشمه خطاهای قضاوتی بشر می‌داند.\n\nسیستم ۱ بر مبنای اطلاعات محدود دم دست، قصه‌ای سازگار سرهم کرد و سیستم ۲ تنبلانه آن را پذیرفت. رهایی از این تله مستلزم پرسیدن آگاهانه از داده‌ها و شواهدی است که در آن لحظه غایب بوده‌اند.`,
+          keyTakeaway: `اطمینان حسی شما پیرامون «${shortSnippet}»، ناشی از انسجام داستانی ناقص بود نه کثرت شواهد.`,
+          question: `در لحظه تصمیم‌گیری برای «${shortSnippet}»، چه متغیرها، داده‌ها یا احتمالات حیاتی نادیده ماندند؟`,
+          placeholder: `مثال: نادیده گرفتن هزینه‌های طولانی‌مدت یا سناریوهای نامطلوب...`,
+          diagramSteps: [
+            { label: 'روایت‌گری سیستم ۱', desc: `ایجاد قطعیت کاذب پیرامون «${shortSnippet}»` },
+            { label: 'شواهد مفقوده (WYSIATI)', desc: 'اطلاعاتی که در افق دید اولیه حضور نداشتند' },
+            { label: 'مکث سیستم ۲', desc: 'جستجوی فعالانه فرضیات رقیب و داده‌های نقض‌کننده' }
+          ]
+        };
+      } else if (nextModule.id === 3) {
+        return {
+          headline: `شناسایی خطاهای اکتشافی و سوگیری در دسترس بودن در «${shortSnippet}»`,
+          concept: `با آشکار شدن نقاط کور پیرامون «${cleanInput}»، نوبت به شناسایی میانبرهای ذهنی (Heuristics) می‌رسد. کانمن نشان می‌دهد که ذهن وقتی با سوالی دشوار روبه‌رو می‌شود، آن را با سوالی ساده‌تر جایگزین می‌کند.\n\nخاطره‌ای تازه، احساسی شدید یا اولین رقمی که به گوش رسیده (لنگر)، جهت قضاوت را تعیین می‌کنند. بیداری سیستم ۲ یعنی مجهز شدن به ترمزهایی که این خطاهای اتوماتیک را خنثی سازند.`,
+          keyTakeaway: `سهولت فراخوانی یک تصویر ذهنی، دلیلی بر صحت یا احتمال وقوع آن در مورد «${shortSnippet}» نیست.`,
+          question: `کدام احساس زودگذر یا خاطره پررنگ، خط‌کش تصمیم شما در مورد «${shortSnippet}» را منحرف کرد؟`,
+          placeholder: `مثال: تحت تاثیر هیجان لحظه‌ای یا تعمیم دادن یک خاطره استثنایی...`,
+          diagramSteps: [
+            { label: 'میانبر اکتشافی', desc: `جایگزینی ناخودآگاه پرسش ساده به جای تحلیل «${shortSnippet}»` },
+            { label: 'تله لنگر / دسترسی', desc: 'سلطه خاطرات دم‌دست یا اولین نشانه‌ها' },
+            { label: 'محاسبه عقلانی', desc: 'بازیابی معیارهای عینی با مداخله سیستم ۲' }
+          ]
+        };
+      } else {
+        return {
+          headline: `تدوین چک‌لیست و پروتکل ترمز شناختی برای «${shortSnippet}»`,
+          concept: `برای مصون ماندن از خطاهای مکرر پیرامون «${cleanInput}»، نمی‌توان صرفاً به نیت و تمرکز ذهنی دل بست؛ زیرا سیستم ۲ ذاتاً تنبل و کم‌انرژی است.\n\nکانمن ایجاد سازوکارهای بیرونی نظیر چک‌لیست، وقفه زمانی ۲۴ ساعته و دریافت بازخورد مستقل (Outside View) را پیشنهاد می‌کند تا تصمیمات پیش از عملیاتی شدن از غربال عقلانیت بگذرند.`,
+          keyTakeaway: `پروتکل ترمز بیرونی، تنها ابزاری است که هیجان‌زدگی سیستم ۱ را در موقعیت «${shortSnippet}» مهار می‌کند.`,
+          question: `پروتکل وقفه ۲۴ ساعته یا چک‌لیست ۳ ماده‌ای شما برای ارزیابی تصمیمات مشابه «${shortSnippet}» چیست؟`,
+          placeholder: `مثال: مکث اجباری و پاسخ به ۳ پرسش مکتوب قبل از هرگونه توافق یا اقدام...`,
+          diagramSteps: [
+            { label: 'هشدار هیجان', desc: `تشخیص تپش شناختی در تصمیمات پیرامون «${shortSnippet}»` },
+            { label: 'وقفه طراحی‌شده', desc: 'توقف کنش و فعال‌سازی چک‌لیست بیرونی' },
+            { label: 'دیدگاه مستقل', desc: 'ارزیابی بی‌طرفانه پیش از ارتکاب به اقدام' }
+          ]
+        };
+      }
+
+    case 'crucial-conversations':
+      if (nextModule.id === 2) {
+        return {
+          headline: `شفاف‌سازی نیت قلبی و هدف مشترک در گفتگوی «${shortSnippet}»`,
+          concept: `در موقعیت پرخطری که فاش کردید: «${cleanInput}»، نخستین عاملی که سقوط می‌کند نیت قلبی است. مغز در تلهٔ اثبات حقانیت، نجات آبرو یا تلافی گرفتار می‌شود.\n\nپترسون و همکارانش یادآور می‌شوند که گفتگو زمانی نجات می‌یابد که به انگیزه اصیل برگردید: من واقعاً برای خودم، برای طرف مقابل و برای بقای این رابطه چه می‌خواهم؟ پاسخ به این پرسش لحن شما را از تهاجم پیراسته می‌سازد.`,
+          keyTakeaway: `وقتی نیت واقعی شما در گفتگوی «${shortSnippet}» حفظ رابطه باشد، دفاع طرف مقابل فرو می‌ریزد.`,
+          question: `انگیزه عمیق قلبی شما برای نجات این ارتباط و رسیدن به هدف مشترک در گفتگوی «${shortSnippet}» چیست؟`,
+          placeholder: `مثال: می‌خواهم بدون تحقیر یا تنش، همکاری سالم و احترام‌آمیزی داشته باشیم...`,
+          diagramSteps: [
+            { label: 'پایش نیت درونی', desc: `تشخیص وسوسه پیروزی یا تلافی در «${shortSnippet}»` },
+            { label: 'یافتن نفع مشترک', desc: 'تعریف هدفی که هر دو طرف از آن سود می‌برند' },
+            { label: 'آرامش کلامی', desc: 'هدایت واژگان به سمت همدلی و گره‌گشایی' }
+          ]
+        };
+      } else if (nextModule.id === 3) {
+        return {
+          headline: `مهارت کنتراست: ایجاد امنیت روانی در مکالمه «${shortSnippet}»`,
+          concept: `با روشن شدن نیت پیرامون «${cleanInput}»، بزرگ‌ترین مانع گفتگوی حیاتی پدیدار می‌شود: هراس طرف مقابل. هراس باعث پناه بردن به سکوت (کنایه، انزوا) یا خشونت (فریاد، تحمیل) می‌گردد.\n\nتکنیک کنتراست پادزهر این احساس تهدید است: ابتدا صریحاً توضیح می‌دهید که چه منظوری ندارید، سپس بر آنچه واقعاً می‌خواهید تاکید می‌ورزید تا سوءتفاهم در نطفه خاموش شود.`,
+          keyTakeaway: `کنتراست ترس طرف مقابل را با شفاف‌سازی پیش‌دستانه نیت‌های منفی از میان برمی‌دارد.`,
+          question: `جمله کنتراست شما (نمی‌خواهم که... بلکه می‌خواهم که...) در مورد «${shortSnippet}» چگونه صورتبندی می‌شود؟`,
+          placeholder: `مثال: نمی‌خواهم تلاشت را زیر سوال ببرم، بلکه می‌خواهم راهی برای رفع این مانع پیدا کنیم...`,
+          diagramSteps: [
+            { label: 'نفی سوءبرداشت', desc: 'توضیح آنچه قصد توهین یا سرزنش آن را ندارید' },
+            { label: 'اثبات نیت خیر', desc: `تاکید بر احترام و هدف مشترک پیرامون «${shortSnippet}»` },
+            { label: 'بازگشایی امنیت', desc: 'ایجاد فضای امن برای بیان حقایق بدون ترس' }
+          ]
+        };
+      } else {
+        return {
+          headline: `تدوین سناریوی ورود و آغاز با فکت‌های ملموس برای «${shortSnippet}»`,
+          concept: `نیت پالایش شده و امنیت با کنتراست استقرار یافته است. اکنون نوبت به ورود به صحنه مکالمه پیرامون «${cleanInput}» با مدل STATE می‌رسد.\n\nبا فکت‌های خام و غیرقابل انکار آغاز کنید، نه با تعابیر ذهنی‌تان. فکت‌ها توهین‌آمیز نیستند و راه را برای غوطه‌وری در استخر معانی مشترک در ۴۸ ساعت آینده هموار می‌کنند.`,
+          keyTakeaway: `آغاز با فکت‌های ملموس، مقاومت دفاعی طرف مقابل را در گفتگوی «${shortSnippet}» به صفر می‌رساند.`,
+          question: `زمان، مکان آرام و اولین فکت عینی که برای آغاز این گفتگو پیرامون «${shortSnippet}» به زبان می‌آورید چیست؟`,
+          placeholder: `مثال: قرار حضوری در ساعت آرام فردا و شروع با فکت مشخص: در ۳ جلسه اخیر مشاهده کردم که...`,
+          diagramSteps: [
+            { label: 'اشتراک فکت عینی', desc: `بیان شواهد قابل مشاهده پیرامون «${shortSnippet}»` },
+            { label: 'طرح متواضعانه داستان', desc: 'بیان احساسات به عنوان فرضیه، نه قضاوت قطعی' },
+            { label: 'دعوت به گفتگو', desc: 'شنیدن فعالانه زاویه دید طرف مقابل' }
+          ]
+        };
+      }
+
+    default: {
+      const defaultHeadline = `کالبدشکافی ریشه رفتاری و پیاده‌سازی «${nextModule.title}» پیرامون «${shortSnippet}»`;
+      const defaultConcept = `اعتراف و تجربهٔ واقعی شما پیرامون «${cleanInput}»، زمینهٔ کاربردی و ملموسی برای بازآفرینی فصل بعدی فراهم ساخت. آموزه‌های ${book.authorFa} در این مرحله مستقیماً بر بازمهندسی همین نقطه عطف استوار است.\n\nدر ادامه، مفهوم محوری این فصل را در بافت تجربه شما واکاوی می‌کنیم: ${nextModule.staticCoreLesson.concept}\n\nبا تمرکز بر این مدل ذهنی، می‌توانید پیوند میان افکار خودکار و نتایج رفتاری را بازطراحی کرده و اصطکاک تغییر را به حداقل برسانید.`;
+      const defaultKeyTakeaway = `کالبدشکافی دقیق «${shortSnippet}»، کلید گذار از نظریه به عمل در این گام است.`;
+      const defaultQuestion = nextModule.interactivePrompt.question;
+      const defaultPlaceholder = nextModule.interactivePrompt.placeholder;
+      const defaultDiagramSteps = nextModule.staticCoreLesson.diagramSteps?.map(step => ({
+        label: step.label,
+        desc: `${step.description} (پیرامون ${shortSnippet})`
+      })) || [
+        { label: '۱. شناسایی موقعیت', desc: `بررسی دقیق بافت «${shortSnippet}»` },
+        { label: '۲. کاربست مدل ذهنی', desc: `اعمال چارچوب ${nextModule.title}` },
+        { label: '۳. تثبیت رفتار', desc: 'پیاده‌سازی عمل در تجربه روزمره' }
+      ];
+
+      return {
+        headline: defaultHeadline,
+        concept: defaultConcept,
+        keyTakeaway: defaultKeyTakeaway,
+        question: defaultQuestion,
+        placeholder: defaultPlaceholder,
+        diagramSteps: defaultDiagramSteps
+      };
+    }
+  }
+}
+
+/**
  * High-fidelity fallback behavioral science coach
  * Used when no API key is provided or offline, ensuring 100% zero-cost operation.
  */
-function generateOfflineCoachingResponse(
+export function generateOfflineCoachingResponse(
   book: BookCurriculum,
   module: ModuleData,
   userInput: string,
-  currentUserState: Record<string, any>
+  currentUserState: Record<string, any>,
+  nextModule?: ModuleData | null
 ): DynamicCoachingResult {
   const cleanInput = userInput.trim();
   const updatedState = { ...currentUserState };
@@ -169,25 +438,32 @@ function generateOfflineCoachingResponse(
       next_question = 'برای ادامه هم‌نگاری این کتاب به گام بعدی وارد شوید.';
   }
 
-  return {
+  const result: DynamicCoachingResult = {
     coaching_response,
     next_question,
     updated_user_state: updatedState,
-    is_final_blueprint: module.id === book.modules.length
+    is_final_blueprint: !nextModule || module.id === book.modules.length,
+    ...(nextModule
+      ? { generated_next_module: synthesizeOfflineChapter(book, module, nextModule, cleanInput) }
+      : {})
   };
+
+  return result;
 }
 
 /**
  * Call Gemini 2.5 Flash with structured JSON output schema
  * Falls back to offline smart coach if no API key or network error
  */
-export async function getDynamicCoachingTurn(
+export async function generateCoachingResponse(
   book: BookCurriculum,
   module: ModuleData,
   userInput: string,
-  currentUserState: Record<string, any>
+  currentUserState: Record<string, any>,
+  nextModule?: ModuleData | null
 ): Promise<DynamicCoachingResult> {
   const apiKey = getStoredApiKey();
+  const hasNextModule = Boolean(nextModule);
 
   // Strategy 1: Try Cloudflare Edge Pages Function (/api/coach)
   // Handles server GEMINI_API_KEY and avoids browser CORS/region restrictions
@@ -198,6 +474,7 @@ export async function getDynamicCoachingTurn(
       body: JSON.stringify({
         book,
         module,
+        nextModule,
         userInput,
         currentUserState,
         clientApiKey: apiKey,
@@ -219,32 +496,107 @@ export async function getDynamicCoachingTurn(
     try {
       const ai = new GoogleGenAI({ apiKey });
 
-      const systemInstruction = `شما یک حکیم کهن و خردمند با جوهر زنده هستید؛ مربی و معمار ارشد تغییر رفتار که با تلفیق مدل ذهنی کتاب "${book.titleFa}" (مدل: ${book.frameworkNameFa}) در گام "${module.title}"، ادامهٔ این کتاب را بر اساس اعتراف و موقعیت کاربر هم‌نگاری می‌کنید.
+      let systemInstruction = `شما یک حکیم کهن و خردمند با جوهر زنده هستید؛ مربی و معمار ارشد تغییر رفتار که با تلفیق مدل ذهنی کتاب "${book.titleFa}" اثر ${book.authorFa} (مدل: ${book.frameworkNameFa || ''}) در گام "${module.title}"، ادامهٔ این کتاب را بر اساس اعتراف و موقعیت کاربر هم‌نگاری می‌کنید.
 
 قوانین اکید:
-۱. زبان خروجی منحصراً فارسی روان، فاخر، صریح و محترمانه باشد.
+۱. زبان خروجی منحصراً فارسی فاخر، روان، صریح و محترمانه باشد.
 ۲. ابتدا کلمات، مثال و بافت واقعی موقعیت کاربر را صریحاً بازتاب دهید تا کاربر عمیقاً احساس کند نوشته‌اش با دقت خوانده شده و کاملاً درک شده است.
 ۳. به کاربر نشان دهید که ادامهٔ این کتاب بر اساس همین اعتراف و موقعیت او در حال نگارش است؛ کتاب همراه با قلم او بازآفرینی می‌شود نه یک پرسش و پاسخ کلیشه‌ای.
 ۴. مطلقاً از قالب‌های عمومی و نصیحت‌های از پیش‌آماده پرهیز کنید؛ مستقیماً روی جزئیات عینی که کاربر نوشته تمرکز کنید.
 ۵. لحن شما مثل یک حکیم کهن و خردمند با جوهر زنده است: نافذ، همدلانه، صریح و بدون تعارف یا تملق.
 ۶. حداکثر طول coaching_response حدود ۱۲۰ تا ۱۵۰ کلمه فارسی باشد. بسیار فشرده، نافذ، متصل به بافت کاربر و متمرکز بر مدل ذهنی بنویسید.
-۷. وضعیت کاربر (updated_user_state) را به طور تمیز و ساختاریافته آپدیت کنید. فیلد کلیدی "${module.interactivePrompt.stateTargetKey}" را در آن ثبت یا غنی‌سازی کنید.
+۷. وضعیت کاربر (updated_user_state) را به طور تمیز و ساختاریافته آپدیت کنید. فیلد کلیدی "${module.interactivePrompt?.stateTargetKey || 'target'}" را در آن ثبت یا غنی‌سازی کنید.
 ۸. خروجی صرفاً یک آبجکت JSON معتبر مطابق با اسکیما باشد.`;
 
-      const prompt = `اطلاعات ماژول فعلی:
+      if (hasNextModule && nextModule) {
+        systemInstruction += `
+
+دستورالعمل ویژه بازآفرینی فصل بعد (generated_next_module):
+شما باید کل فصل بعدی را با لحن و قلم اصیل نویسنده کتاب (${book.authorFa}) منحصراً برای همین کاربر بازنویسی و خلق کنید:
+۱. اعتراف و بافت واقعی کاربر («${userInput}») را مستقیماً در تاروپود نقطه عطف نظریه فصل بعد یعنی «${nextModule.title}» (تیتر پایه: «${nextModule.staticCoreLesson?.headline || ''}») ببافید.
+۲. مطلقاً نصیحت عمومی نکنید؛ اشیاء عینی، اتاق‌ها، فضاها و رفتارهای ملموس کاربر را درون مفهوم نظری (concept) به طول ۱۴۰ تا ۱۸۰ کلمه فارسی فاخر و نافذ تشریح کنید.
+۳. یک پیام کلیدی تک‌خطی و قاطع (keyTakeaway) ارائه دهید.
+۴. یک پرسش کاوش‌گرانه و هدفمند بعدی (question) متناسب با گام بعد طراحی کنید.
+۵. ۳ مرحله دیاگرام (diagramSteps) شامل label و desc با استفاده مستقیم از بافت عینی کاربر بسازید.`;
+      }
+
+      let prompt = `اطلاعات ماژول فعلی:
 - کتاب: ${book.titleFa}
 - عنوان درس: ${module.title}
-- مفهوم ذهنی: ${module.staticCoreLesson.concept}
-- سوال مطرح‌شده از کاربر: ${module.interactivePrompt.question}
+- مفهوم ذهنی: ${module.staticCoreLesson?.concept || ''}
+- سوال مطرح‌شده از کاربر: ${module.interactivePrompt?.question || ''}
 
 پاسخ و موقعیت کاربر به این پرسش:
 "${userInput}"
 
 وضعیت فعلی داده‌های کاربر (USER_STATE_JSON):
-${JSON.stringify(currentUserState, null, 2)}
+${JSON.stringify(currentUserState, null, 2)}`;
+
+      if (hasNextModule && nextModule) {
+        prompt += `
+
+داربست نقطه عطف نظریه فصل بعد (Scaffold for Next Chapter):
+- عنوان فصل بعد: ${nextModule.title}
+- تیتر نظریه پایه فصل بعد: ${nextModule.staticCoreLesson?.headline || ''}
+- مفهوم پایه فصل بعد: ${nextModule.staticCoreLesson?.concept || ''}
+- پرسش پایه فصل بعد: ${nextModule.interactivePrompt?.question || ''}
 
 وظیفه شما:
-ابتدا کلمات و بافت واقعی موقعیت کاربر را صریحاً بازتاب دهید و نشان دهید ادامه این کتاب بر اساس همین اعتراف در حال نگارش است (حدود ۱۲۰-۱۵۰ کلمه فارسی)، سوال هدایت‌کننده بعدی را مشخص کنید و آبجکت وضعیت کاربر را به‌روزرسانی کنید.`;
+۱. بازتاب همدلانه و مستقیم موقعیت کاربر (coaching_response) در حدود ۱۲۰-۱۵۰ کلمه فارسی.
+۲. تعیین سوال راهبردی بعدی (next_question).
+۳. به‌روزرسانی آبجکت وضعیت کاربر (updated_user_state).
+۴. تألیف و بازآفرینی کامل فصل بعدی در آبجکت generated_next_module با قلم اصیل ${book.authorFa} و بر اساس جزئیات اعتراف کاربر.`;
+      } else {
+        prompt += `
+
+این فصل، آخرین گام کتاب است و پس از آن به طرح نهایی (Blueprint) خواهیم رسید.
+
+وظیفه شما:
+۱. بازتاب کلمات و موقعیت کاربر (coaching_response) در حدود ۱۲۰-۱۵۰ کلمه فارسی و جمع‌بندی مسیر طی‌شده.
+۲. تعیین سوال هدایت‌کننده بعدی (next_question).
+۳. به‌روزرسانی وضعیت کاربر (updated_user_state).`;
+      }
+
+      const properties: Record<string, any> = {
+        coaching_response: {
+          type: Type.STRING,
+          description: 'بازتاب همدلانه کلمات کاربر و ادامه نگارش کتاب بر اساس موقعیت او به زبان فارسی، حدود ۱۲۰ تا ۱۵۰ کلمه'
+        },
+        next_question: {
+          type: Type.STRING,
+          description: 'سوال راهبردی برای مرحله بعدی'
+        },
+        updated_user_state: {
+          type: Type.OBJECT,
+          description: 'وضعیت ادغام‌شده و جدید کاربر بر اساس مدل ذهنی'
+        }
+      };
+      const required: string[] = ['coaching_response', 'next_question', 'updated_user_state'];
+
+      if (hasNextModule) {
+        properties.generated_next_module = {
+          type: Type.OBJECT,
+          properties: {
+            headline: { type: Type.STRING, description: 'تیتر جذاب فصل بعد پیرامون موقعیت کاربر' },
+            concept: { type: Type.STRING, description: 'متن عمیق و روان درس بعدی با لحن نویسنده کتاب (حداکثر ۱۶۰ تا ۱۸۰ کلمه فارسی)' },
+            keyTakeaway: { type: Type.STRING, description: 'پیام کلیدی یک‌خطی' },
+            question: { type: Type.STRING, description: 'پرسش کاوش‌گرانه بعدی' },
+            diagramSteps: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  label: { type: Type.STRING },
+                  desc: { type: Type.STRING }
+                },
+                required: ['label', 'desc']
+              }
+            }
+          },
+          required: ['headline', 'concept', 'keyTakeaway', 'question']
+        };
+        required.push('generated_next_module');
+      }
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -255,42 +607,27 @@ ${JSON.stringify(currentUserState, null, 2)}
           responseMimeType: 'application/json',
           responseSchema: {
             type: Type.OBJECT,
-            properties: {
-              coaching_response: {
-                type: Type.STRING,
-                description: 'بازتاب همدلانه کلمات کاربر و ادامه نگارش کتاب بر اساس موقعیت او به زبان فارسی، حدود ۱۲۰ تا ۱۵۰ کلمه'
-              },
-              next_question: {
-                type: Type.STRING,
-                description: 'سوال راهبردی برای مرحله بعدی'
-              },
-              updated_user_state: {
-                type: Type.OBJECT,
-                description: 'وضعیت ادغام‌شده و جدید کاربر بر اساس مدل ذهنی'
-              }
-            },
-            required: ['coaching_response', 'next_question', 'updated_user_state']
+            properties,
+            required
           }
         }
       });
 
       const text = response.text;
       if (text) {
-        const parsed = JSON.parse(text) as {
-          coaching_response: string;
-          next_question: string;
-          updated_user_state: Record<string, any>;
-        };
-
+        const parsed = JSON.parse(text) as any;
         return {
           coaching_response: parsed.coaching_response,
           next_question: parsed.next_question,
           updated_user_state: {
             ...currentUserState,
             ...parsed.updated_user_state,
-            [module.interactivePrompt.stateTargetKey]: userInput
+            [module.interactivePrompt?.stateTargetKey || 'target']: userInput
           },
-          is_final_blueprint: module.id === book.modules.length
+          is_final_blueprint: !hasNextModule || module.id === book.modules.length,
+          ...(hasNextModule && parsed.generated_next_module
+            ? { generated_next_module: parsed.generated_next_module }
+            : {})
         };
       }
     } catch (sdkError) {
@@ -299,5 +636,8 @@ ${JSON.stringify(currentUserState, null, 2)}
   }
 
   // Strategy 3: Graceful fallback to smart local behavioral science coach
-  return generateOfflineCoachingResponse(book, module, userInput, currentUserState);
+  return generateOfflineCoachingResponse(book, module, userInput, currentUserState, nextModule);
 }
+
+// Backwards-compatibility alias for existing components
+export const getDynamicCoachingTurn = generateCoachingResponse;
