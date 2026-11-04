@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookCurriculum, ModuleData, DynamicCoachingResult } from '../types/curriculum';
+import {
+  BookCurriculum,
+  ModuleData,
+  DynamicCoachingResult,
+  GeneratedModuleContent
+} from '../types/curriculum';
 import { speechService } from '../services/speechService';
-import { getDynamicCoachingTurn } from '../services/geminiService';
+import { generateCoachingResponse } from '../services/geminiService';
 import { playPageTurnSound } from '../services/soundService';
 import { LivingInkText } from './LivingInkText';
 import {
@@ -19,6 +24,7 @@ interface ModuleReaderProps {
   book: BookCurriculum;
   moduleIndex: number;
   userState: Record<string, any>;
+  authoredModules?: Record<number, GeneratedModuleContent>;
   onCompleteModuleTurn: (result: DynamicCoachingResult) => void;
   onGoToNextModule: () => void;
   onShowBlueprint: () => void;
@@ -128,6 +134,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
   book,
   moduleIndex,
   userState,
+  authoredModules,
   onCompleteModuleTurn,
   onGoToNextModule,
   onShowBlueprint,
@@ -139,7 +146,28 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
   const isLastModule = moduleIndex === book.modules.length - 1;
   const romanNumeral = ROMAN_NUMERALS[moduleIndex] || `No. ${moduleIndex + 1}`;
 
-  const targetKey = currentModule.interactivePrompt.stateTargetKey;
+  const generatedContent = authoredModules?.[moduleIndex];
+  const effectiveLesson = generatedContent
+    ? {
+        headline: generatedContent.headline,
+        concept: generatedContent.concept,
+        keyTakeaway: generatedContent.keyTakeaway,
+        diagramSteps: generatedContent.diagramSteps?.map((s) => ({
+          label: s.label,
+          description: s.desc,
+        })) || currentModule.staticCoreLesson.diagramSteps,
+      }
+    : currentModule.staticCoreLesson;
+
+  const effectivePrompt = generatedContent
+    ? {
+        question: generatedContent.question,
+        placeholder: generatedContent.placeholder || currentModule.interactivePrompt.placeholder,
+        stateTargetKey: currentModule.interactivePrompt.stateTargetKey,
+      }
+    : currentModule.interactivePrompt;
+
+  const targetKey = effectivePrompt.stateTargetKey;
   const initialAnswer = (userState && userState[targetKey]) ? String(userState[targetKey]) : '';
 
   const [userInput, setUserInput] = useState<string>(initialAnswer);
@@ -180,8 +208,8 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
   }, []);
 
   useEffect(() => {
-    const existingAnswer = (userState && userState[currentModule.interactivePrompt.stateTargetKey])
-      ? String(userState[currentModule.interactivePrompt.stateTargetKey])
+    const existingAnswer = (userState && userState[effectivePrompt.stateTargetKey])
+      ? String(userState[effectivePrompt.stateTargetKey])
       : '';
     setUserInput(existingAnswer);
     setCoachingResult(null);
@@ -189,7 +217,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
     speechService.stop();
 
     if (!isAudioMuted) {
-      const textToRead = `${currentModule.title}. ${currentModule.staticCoreLesson.headline} ${currentModule.staticCoreLesson.concept}`;
+      const textToRead = `${currentModule.title}. ${effectiveLesson.headline} ${effectiveLesson.concept}`;
       speechService.speak(textToRead);
     }
 
@@ -255,11 +283,13 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
     setSpeechError(null);
 
     try {
-      const result = await getDynamicCoachingTurn(
+      const nextModule = book.modules[moduleIndex + 1] || null;
+      const result = await generateCoachingResponse(
         book,
         currentModule,
         userInput.trim(),
-        userState
+        userState,
+        nextModule
       );
 
       setCoachingResult(result);
@@ -308,14 +338,15 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
         {/* Headline Quote (Iron-Gall Ink) */}
         <div className="mb-4 pr-3 border-r-3 border-[#8c6a35]">
           <p className="font-garamond text-base sm:text-lg font-bold text-[#2a1d0f] leading-relaxed">
-            «{currentModule.staticCoreLesson.headline}»
+            «{effectiveLesson.headline}»
           </p>
         </div>
 
         {/* Core Lesson Concept (Tom Riddle's Diary Living Ink Effect) */}
         <div className="font-vazir text-xs sm:text-sm text-[#222933] leading-relaxed mb-4">
           <LivingInkText
-            text={currentModule.staticCoreLesson.concept}
+            key={`concept-${book.id}-${moduleIndex}`}
+            text={effectiveLesson.concept}
             speedMs={25}
             inkColor="#222933"
           />
@@ -323,7 +354,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
       </div>
 
       {/* Classical Manuscript Engraving: Diagram of Behavioral Structure */}
-      {currentModule.staticCoreLesson.diagramSteps && (
+      {effectiveLesson.diagramSteps && (
         <div className="my-auto bg-[#eee4d0]/90 rounded-xl p-3 sm:p-4 border border-[#aa936d]/40 shadow-[inset_0_1px_3px_rgba(42,26,16,0.12)]">
           <div className="flex items-center justify-between border-b border-[#aa936d]/30 pb-1.5 mb-2">
             <span className="font-garamond text-xs font-bold text-[#694e24] flex items-center gap-1.5">
@@ -338,10 +369,10 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
           <div
             className="grid gap-2"
             style={{
-              gridTemplateColumns: `repeat(${Math.min(currentModule.staticCoreLesson.diagramSteps.length, 4)}, minmax(0, 1fr))`,
+              gridTemplateColumns: `repeat(${Math.min(effectiveLesson.diagramSteps.length, 4)}, minmax(0, 1fr))`,
             }}
           >
-            {currentModule.staticCoreLesson.diagramSteps.map((step, idx) => {
+            {effectiveLesson.diagramSteps.map((step, idx) => {
               const userAnnotation = getUserContextForStep(step.label, userState);
               return (
                 <div
@@ -375,7 +406,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
           </div>
 
           <div className="mt-2 text-center font-garamond text-[11px] text-[#4f3c21] italic bg-[#fbf8f0]/95 px-2 py-1 rounded border border-[#aa936d]/20">
-            « {currentModule.staticCoreLesson.keyTakeaway} »
+            « {effectiveLesson.keyTakeaway} »
           </div>
         </div>
       )}
@@ -416,7 +447,8 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
         <div className="mb-3">
           <h3 className="font-garamond text-base sm:text-lg font-bold text-[#1c2430] leading-snug">
             <LivingInkText
-              text={currentModule.interactivePrompt.question}
+              key={`question-${book.id}-${moduleIndex}`}
+              text={effectivePrompt.question}
               speedMs={20}
               inkColor="#1c2430"
             />
@@ -451,7 +483,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
               value={userInput}
               disabled={isLoading || Boolean(coachingResult)}
               onChange={(e) => setUserInput(e.target.value)}
-              placeholder={currentModule.interactivePrompt.placeholder}
+              placeholder={effectivePrompt.placeholder}
               className="w-full bg-transparent border-0 p-0 text-[#1c2430] font-vazir text-xs sm:text-sm leading-relaxed outline-none resize-none placeholder:text-[#9d7d49]/70 disabled:opacity-85"
               style={{
                 backgroundImage: 'repeating-linear-gradient(transparent, transparent 27px, rgba(170, 147, 109, 0.25) 27px, rgba(170, 147, 109, 0.25) 28px)',

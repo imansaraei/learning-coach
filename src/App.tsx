@@ -67,14 +67,24 @@ export const App: React.FC = () => {
   const handleCompleteModuleTurn = (result: DynamicCoachingResult) => {
     if (!currentBook) return;
 
-    setSavedStates((prev) => ({
-      ...prev,
-      [currentBook.id]: {
-        ...(prev[currentBook.id] || currentBook.initialUserState),
-        ...result.updated_user_state,
-        ...(result.is_final_blueprint ? { status: 'completed_blueprint' } : {})
-      }
-    }));
+    setSavedStates((prev) => {
+      const bookState = prev[currentBook.id] || currentBook.initialUserState;
+      const existingAuthored = bookState.authoredModules || {};
+      const nextIdx = currentModuleIndex + 1;
+      const updatedAuthored = result.generated_next_module
+        ? { ...existingAuthored, [nextIdx]: result.generated_next_module }
+        : existingAuthored;
+
+      return {
+        ...prev,
+        [currentBook.id]: {
+          ...bookState,
+          ...result.updated_user_state,
+          authoredModules: updatedAuthored,
+          ...(result.is_final_blueprint ? { status: 'completed_blueprint' } : {})
+        }
+      };
+    });
   };
 
   const handleGoToNextModule = () => {
@@ -104,7 +114,13 @@ export const App: React.FC = () => {
     setSavedStates((prev) => {
       const copy = { ...prev };
       delete copy[currentBook.id];
-      return copy;
+      return {
+        ...copy,
+        [currentBook.id]: {
+          ...currentBook.initialUserState,
+          authoredModules: {}
+        }
+      };
     });
     setCurrentModuleIndex(0);
     setViewMode('module');
@@ -157,6 +173,7 @@ export const App: React.FC = () => {
             book={currentBook}
             moduleIndex={currentModuleIndex}
             userState={activeUserState}
+            authoredModules={activeUserState.authoredModules || {}}
             onCompleteModuleTurn={handleCompleteModuleTurn}
             onGoToNextModule={handleGoToNextModule}
             onShowBlueprint={handleShowBlueprint}
