@@ -16,7 +16,8 @@ export const App: React.FC = () => {
   const [viewMode, setViewMode] = useState<'catalog' | 'module' | 'blueprint'>('catalog');
   const [isStateDrawerOpen, setIsStateDrawerOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
-  const [isAudioMuted, setIsAudioMuted] = useState<boolean>(true); // default muted to be polite
+  const [isAudioMuted, setIsAudioMuted] = useState<boolean>(true);
+  const [isCandlelit, setIsCandlelit] = useState<boolean>(true); // default warm candlelight ambiance
   const [savedStates, setSavedStates] = useState<Record<string, Record<string, any>>>(() => {
     if (typeof window === 'undefined') return {};
     try {
@@ -27,7 +28,6 @@ export const App: React.FC = () => {
     }
   });
 
-  // Save states to localStorage whenever changed
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_STATES_KEY, JSON.stringify(savedStates));
@@ -46,7 +46,6 @@ export const App: React.FC = () => {
     if (existingState?.status === 'completed_blueprint') {
       setViewMode('blueprint');
     } else {
-      // Find the first unfinished module
       let firstUnfinished = 0;
       for (let i = 0; i < book.modules.length; i++) {
         const key = book.modules[i].interactivePrompt.stateTargetKey;
@@ -112,7 +111,11 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-canvas text-silver-platinum flex flex-col font-vazir selection:bg-petronas-secondary selection:text-canvas">
+    <div
+      className={`min-h-screen bg-surface text-on-surface flex flex-col font-vazir selection:bg-primary selection:text-on-primary transition-all duration-700 ${
+        isCandlelit ? 'candle-glow' : ''
+      }`}
+    >
       {/* Header */}
       <Header
         currentBook={currentBook}
@@ -127,6 +130,8 @@ export const App: React.FC = () => {
         }
         isAudioMuted={isAudioMuted}
         onToggleAudioMute={() => setIsAudioMuted((prev) => !prev)}
+        isCandlelit={isCandlelit}
+        onToggleCandlelight={() => setIsCandlelit((prev) => !prev)}
       />
 
       {/* Main View Area */}
@@ -136,6 +141,8 @@ export const App: React.FC = () => {
             books={BOOKS_CURRICULUM}
             onSelectBook={handleSelectBook}
             savedStates={savedStates}
+            isCandlelit={isCandlelit}
+            onToggleCandlelight={() => setIsCandlelit((prev) => !prev)}
           />
         )}
 
@@ -161,7 +168,7 @@ export const App: React.FC = () => {
         )}
       </main>
 
-      {/* Live Framework State (USER_STATE_JSON) Drawer */}
+      {/* Live Framework State Drawer */}
       <LiveStateDrawer
         isOpen={isStateDrawerOpen}
         onClose={() => setIsStateDrawerOpen(false)}

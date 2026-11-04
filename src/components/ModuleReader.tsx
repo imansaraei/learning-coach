@@ -13,8 +13,9 @@ import {
   CheckCircle2,
   Lightbulb,
   AlertCircle,
-  Terminal,
-  Activity
+  Feather,
+  Sparkles,
+  Flame
 } from 'lucide-react';
 
 interface ModuleReaderProps {
@@ -149,28 +150,34 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
   };
 
   return (
-    <div className="py-6 px-4 max-w-3xl mx-auto space-y-5">
-      {/* Telemetry Tracking Header */}
-      <div className="flex items-center justify-between font-mono text-[11px] pb-2 border-b border-[#232B3B]">
+    <div className="py-6 px-3 sm:px-4 max-w-3xl mx-auto space-y-6">
+      {/* Chapter Indicator Ribbon */}
+      <div className="flex items-center justify-between pb-2 border-b border-outline-variant/40">
         <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-petronas-secondary animate-pulse" />
-          <span className="text-petronas-secondary font-semibold uppercase tracking-wider">
-            MODULE 0{currentModule.id} // 0{book.modules.length}
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <span className="font-garamond text-sm text-primary font-bold tracking-wide">
+            فصل {currentModule.id} از {book.modules.length}
           </span>
         </div>
-        <span className="bg-surface-low border border-[#232B3B] text-silver-aero px-2 py-0.5 rounded-sm">
+        <span className="font-sans text-xs bg-surface-container-high border border-outline-variant/40 text-secondary px-3 py-1 rounded-full">
           {currentModule.frameworkStep}
         </span>
       </div>
 
-      {/* SECTION 1: [STATIC CORE LESSON] */}
-      <section className="rounded bg-surface border border-[#232B3B] p-5 sm:p-7 relative shadow-sm">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="space-y-1">
-            <span className="font-mono text-[10px] text-petronas-primary uppercase tracking-widest block font-semibold">
-              // STATIC CORE LESSON // COGNITIVE MODEL
-            </span>
-            <h2 className="text-base sm:text-lg font-bold text-silver-platinum leading-snug font-heading">
+      {/* SECTION 1: [STATIC CORE LESSON] (The Illuminated Manuscript Folio) */}
+      <section className="relative rounded-2xl bg-surface-container border border-primary/30 p-6 sm:p-8 shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden">
+        {/* Subtle Ambient Gold Glow in Corner */}
+        <div className="absolute -top-12 -left-12 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1 text-primary">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span className="font-sans text-[11px] font-semibold uppercase tracking-wider">
+                درس اصلی و مدل ذهنی [STATIC CORE LESSON]
+              </span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-on-surface font-garamond leading-snug">
               {currentModule.title}
             </h2>
           </div>
@@ -181,49 +188,49 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
                 `${currentModule.title}. ${currentModule.staticCoreLesson.headline} ${currentModule.staticCoreLesson.concept}`
               )
             }
-            className="p-1.5 rounded bg-surface-low hover:bg-surface-high border border-[#232B3B] text-silver-aero hover:text-petronas-secondary transition flex-shrink-0"
+            className="p-2 rounded-full bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/40 text-on-surface-variant hover:text-primary transition flex-shrink-0"
             title={isReadingAloud ? 'توقف صوت' : 'شنیدن صوتی درس'}
           >
             {isReadingAloud ? (
               <VolumeX className="w-4 h-4 text-rose-400" />
             ) : (
-              <Volume2 className="w-4 h-4 text-petronas-secondary" />
+              <Volume2 className="w-4 h-4 text-primary" />
             )}
           </button>
         </div>
 
-        {/* Headline */}
-        <div className="mb-4 bg-surface-low border-r-2 border-petronas-secondary pr-3.5 py-2 rounded-l">
-          <p className="text-sm font-semibold text-petronas-secondary">
-            {currentModule.staticCoreLesson.headline}
+        {/* Headline Quote Box */}
+        <div className="mb-5 bg-surface-container-lowest/80 border-r-3 border-primary pr-4 py-2.5 rounded-l-lg shadow-inner">
+          <p className="text-base sm:text-lg font-garamond font-semibold text-primary leading-relaxed">
+            «{currentModule.staticCoreLesson.headline}»
           </p>
         </div>
 
         {/* Concept Text */}
-        <p className="text-sm text-silver-aero leading-relaxed mb-5">
+        <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed mb-6 font-vazir font-normal">
           {currentModule.staticCoreLesson.concept}
         </p>
 
-        {/* Precision Diagram Steps */}
+        {/* Illuminated Diagram Steps */}
         {currentModule.staticCoreLesson.diagramSteps && (
-          <div className="mb-5 bg-surface-low border border-[#232B3B] rounded p-4">
-            <div className="flex items-center gap-1.5 mb-3 font-mono text-[10px] text-silver-graphite uppercase tracking-wider">
-              <Activity className="w-3 h-3 text-petronas-secondary" />
-              <span>LOGICAL ARCHITECTURE FLOW:</span>
+          <div className="mb-6 bg-surface-container-lowest/60 border border-outline-variant/40 rounded-xl p-4">
+            <div className="flex items-center gap-1.5 mb-3 font-sans text-xs text-secondary font-semibold">
+              <span className="material-symbols-outlined text-[16px] text-primary">schema</span>
+              <span>سیر منطقی مدل ذهنی:</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {currentModule.staticCoreLesson.diagramSteps.map((step, idx) => (
                 <div
                   key={idx}
-                  className="bg-surface border border-[#232B3B] rounded p-3 flex flex-col justify-between"
+                  className="bg-surface-container border border-outline-variant/40 rounded-lg p-3 flex flex-col justify-between"
                 >
-                  <div className="flex items-center gap-1.5 font-mono text-xs text-petronas-secondary mb-1">
-                    <span className="text-[10px] bg-surface-low border border-petronas-primary/30 px-1.5 rounded-sm">
-                      0{idx + 1}
+                  <div className="flex items-center gap-1.5 font-garamond text-sm text-primary font-bold mb-1">
+                    <span className="w-5 h-5 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center font-bold">
+                      {idx + 1}
                     </span>
-                    <span className="font-semibold">{step.label}</span>
+                    <span>{step.label}</span>
                   </div>
-                  <p className="text-[11px] text-silver-aero leading-tight">
+                  <p className="text-xs text-on-surface-variant leading-relaxed font-vazir">
                     {step.description}
                   </p>
                 </div>
@@ -233,71 +240,79 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
         )}
 
         {/* Key Takeaway Box */}
-        <div className="flex items-start gap-2.5 bg-surface-low border border-petronas-primary/30 rounded p-3 text-xs text-silver-platinum">
-          <Lightbulb className="w-4 h-4 text-petronas-secondary flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 bg-surface-container-high/80 border border-primary/40 rounded-xl p-4 text-xs text-on-surface">
+          <Lightbulb className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
           <div>
-            <span className="font-mono text-[11px] text-petronas-secondary font-bold block mb-0.5 uppercase tracking-wide">
-              KEY TAKEAWAY:
+            <span className="font-garamond text-sm font-bold text-primary block mb-0.5">
+              نکته زرین (Key Takeaway):
             </span>
-            <span className="text-silver-aero">{currentModule.staticCoreLesson.keyTakeaway}</span>
+            <span className="text-on-surface-variant leading-relaxed">
+              {currentModule.staticCoreLesson.keyTakeaway}
+            </span>
           </div>
         </div>
       </section>
 
-      {/* SECTION 2: [INTERACTIVE CHECKPOINT & USER INPUT] */}
-      <section className="rounded bg-surface border border-[#232B3B] p-5 sm:p-7 shadow-sm">
+      {/* SECTION 2: [INTERACTIVE CHECKPOINT] (The Floating Quill Input Dock) */}
+      <section className="relative rounded-2xl bg-surface-container border border-outline-variant/60 p-6 sm:p-8 shadow-md">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-sm bg-petronas-secondary animate-pulse" />
-            <span className="font-mono text-[10px] text-petronas-secondary uppercase tracking-widest font-semibold">
-              // INTERACTIVE CHECKPOINT // PERSONAL TELEMETRY
-            </span>
+            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
+              <Feather className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-sans text-[11px] text-primary font-bold uppercase tracking-wider block">
+                نگارش شخصی در اسکریپتوریوم [INTERACTIVE CHECKPOINT]
+              </span>
+              <span className="font-sans text-[10px] text-on-surface-variant">
+                ورودی شما در وضعیت زنده سند ذخیره می‌شود
+              </span>
+            </div>
           </div>
-          <span className="font-mono text-[10px] text-silver-graphite">TARGET: {currentModule.interactivePrompt.stateTargetKey}</span>
         </div>
 
-        <h3 className="text-sm sm:text-base font-bold text-silver-platinum mb-2 font-heading leading-relaxed">
+        <h3 className="text-base sm:text-lg font-bold text-on-surface mb-2 font-garamond leading-relaxed">
           {currentModule.interactivePrompt.question}
         </h3>
 
         {currentModule.interactivePrompt.contextHint && (
-          <p className="text-xs text-silver-graphite mb-4 bg-surface-low p-2.5 rounded border border-[#232B3B]">
+          <p className="text-xs text-secondary mb-4 bg-surface-container-lowest/60 p-3 rounded-lg border border-outline-variant/30 font-vazir">
             💡 راهنما: {currentModule.interactivePrompt.contextHint}
           </p>
         )}
 
         {/* Input Form */}
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <textarea
               rows={3}
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               placeholder={currentModule.interactivePrompt.placeholder}
-              className="w-full bg-canvas border border-[#232B3B] focus:border-petronas-secondary focus:ring-1 focus:ring-petronas-secondary rounded p-3 text-xs sm:text-sm text-silver-platinum placeholder:text-silver-graphite focus:outline-none transition resize-none leading-relaxed font-vazir"
+              className="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-xl p-4 text-sm text-on-surface placeholder:text-outline focus:outline-none transition resize-none leading-relaxed font-vazir shadow-inner"
             />
 
-            {/* Voice Input Button */}
-            <div className="absolute bottom-2.5 left-2.5">
+            {/* Voice Dictation (Quill Mic) */}
+            <div className="absolute bottom-3 left-3">
               <button
                 type="button"
                 onClick={toggleListening}
-                className={`px-2.5 py-1 text-xs font-mono rounded border transition flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 text-xs font-sans rounded-full border transition flex items-center gap-1.5 ${
                   isListening
-                    ? 'bg-rose-950 border-rose-500 text-rose-300 animate-pulse'
-                    : 'bg-surface-low border-[#232B3B] text-silver-aero hover:text-petronas-secondary hover:border-petronas-secondary/50'
+                    ? 'bg-rose-950/80 border-rose-500 text-rose-300 animate-pulse'
+                    : 'bg-surface-container border-outline-variant/50 text-on-surface-variant hover:text-primary hover:border-primary/50'
                 }`}
-                title={isListening ? 'توقف ضبط صدا' : 'ورودی صوتی با میکروفون'}
+                title={isListening ? 'توقف ضبط صدا' : 'ورودی صوتی (رایگان)'}
               >
                 {isListening ? (
                   <>
                     <MicOff className="w-3.5 h-3.5" />
-                    <span className="text-[10px] uppercase">LISTENING...</span>
+                    <span>در حال شنیدن...</span>
                   </>
                 ) : (
                   <>
                     <Mic className="w-3.5 h-3.5" />
-                    <span className="text-[10px] uppercase">VOICE IN</span>
+                    <span>قلم صوتی</span>
                   </>
                 )}
               </button>
@@ -305,33 +320,32 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
           </div>
 
           {speechError && (
-            <div className="flex items-center gap-1.5 text-xs text-rose-400 font-mono">
+            <div className="flex items-center gap-1.5 text-xs text-rose-400 font-sans">
               <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-              <span>خطای صوت: {speechError}</span>
+              <span>خطای تشخیص صوت: {speechError}</span>
             </div>
           )}
 
-          {/* Action Row */}
+          {/* Submit Gilded Button */}
           <div className="flex items-center justify-between pt-1">
-            <span className="font-mono text-[10px] text-silver-graphite hidden sm:inline">
-              COMPACT STATE REDUCTION ACTIVE
+            <span className="text-[11px] font-sans text-outline hidden sm:inline">
+              ردیابی کمینه‌گر وضعیت فعال است (&lt;$0.001 هزینه)
             </span>
 
-            {/* Primary Petronas Button */}
             <button
               type="submit"
               disabled={!userInput.trim() || isLoading}
-              className="flex items-center gap-2 bg-petronas-primary hover:bg-petronas-secondary text-canvas font-mono font-bold text-xs uppercase px-4 py-2 rounded border border-petronas-secondary disabled:opacity-40 disabled:cursor-not-allowed shadow-petronas-btn transition-all duration-150"
+              className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-garamond font-bold text-sm px-5 py-2.5 rounded-xl shadow-[0_4px_16px_rgba(242,202,80,0.35)] disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 hover:shadow-gold-glow"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>ANALYZING TURN...</span>
+                  <Loader2 className="w-4 h-4 animate-spin text-on-primary" />
+                  <span>تحلیل روان‌شناختی مربی...</span>
                 </>
               ) : (
                 <>
                   <span>ارزیابی و تحلیل مربی</span>
-                  <Send className="w-3 h-3" />
+                  <Send className="w-3.5 h-3.5" />
                 </>
               )}
             </button>
@@ -339,45 +353,45 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
         </form>
       </section>
 
-      {/* SECTION 3: [DYNAMIC AI COACHING BRIDGE] */}
+      {/* SECTION 3: [DYNAMIC AI COACHING BRIDGE] (Living Scholar Margin Annotation) */}
       {coachingResult && (
-        <section className="rounded bg-surface-high border border-petronas-secondary/60 p-5 sm:p-7 shadow-telemetry-glow animate-in fade-in slide-in-from-bottom-2 duration-200">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#232B3B]">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded bg-surface-low border border-petronas-secondary/40 text-petronas-secondary flex items-center justify-center">
-                <Terminal className="w-3.5 h-3.5" />
+        <section className="relative rounded-2xl bg-surface-container-high border-2 border-primary/50 p-6 sm:p-8 shadow-gold-glow animate-in fade-in slide-in-from-bottom-3 duration-300">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-outline-variant/40">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center">
+                <Flame className="w-4 h-4 fill-primary" />
               </div>
               <div>
-                <span className="font-mono text-[10px] text-petronas-secondary font-bold uppercase tracking-wider block">
-                  AI COACHING SYNTHESIS // GEMINI 2.5 FLASH
+                <span className="font-garamond text-base font-bold text-primary block leading-none">
+                  حکمت مربی هوش مصنوعی [SCHOLAR ANNOTATION]
                 </span>
-                <span className="font-mono text-[10px] text-silver-graphite">
-                  STRUCTURED JSON · BEHAVIORAL SCIENCE (&lt;150 WORDS)
+                <span className="font-sans text-[10px] text-on-surface-variant">
+                  تحلیل مبتنی بر علوم رفتاری (صریح و فاقد تملق، زیر ۱۵۰ کلمه)
                 </span>
               </div>
             </div>
 
             <button
               onClick={() => handleToggleReadAloud(coachingResult.coaching_response)}
-              className="p-1.5 rounded bg-surface-low border border-[#232B3B] text-petronas-secondary hover:text-white transition"
+              className="p-2 rounded-full bg-surface-container border border-outline-variant/40 text-primary hover:text-white transition"
               title="شنیدن تحلیل صوتی مربی"
             >
               <Volume2 className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Coaching Response Body */}
-          <div className="bg-canvas border border-[#232B3B] rounded p-4 mb-4">
-            <p className="text-xs sm:text-sm text-silver-platinum leading-relaxed font-normal">
+          {/* Response Text */}
+          <div className="bg-surface-container-lowest/80 border border-outline-variant/40 rounded-xl p-4 mb-4">
+            <p className="text-sm sm:text-base text-on-surface leading-relaxed font-vazir">
               {coachingResult.coaching_response}
             </p>
           </div>
 
-          {/* Next Question / Strategy Hint */}
+          {/* Next Guided Question */}
           {coachingResult.next_question && (
-            <div className="flex items-start gap-2 bg-surface-low border border-petronas-primary/30 rounded p-3 text-xs text-petronas-secondary mb-5 font-mono">
-              <span className="font-bold flex-shrink-0">NEXT STEP:</span>
-              <span className="text-silver-platinum font-vazir">{coachingResult.next_question}</span>
+            <div className="flex items-start gap-2 bg-primary/10 border border-primary/30 rounded-xl p-3.5 text-xs text-primary mb-5 font-vazir">
+              <span className="font-bold font-garamond text-sm flex-shrink-0">گام راهبردی بعدی:</span>
+              <span className="leading-relaxed">{coachingResult.next_question}</span>
             </div>
           )}
 
@@ -386,18 +400,18 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
             {isLastModule ? (
               <button
                 onClick={onShowBlueprint}
-                className="flex items-center gap-2 bg-petronas-secondary hover:bg-white text-canvas font-mono font-bold text-xs uppercase px-4 py-2.5 rounded border border-petronas-secondary shadow-telemetry-glow transition"
+                className="flex items-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-garamond font-bold text-sm px-6 py-2.5 rounded-xl shadow-gold-glow transition-all active:scale-95"
               >
-                <span>مشاهده و دریافت بلوپرینت نهایی</span>
+                <span>مشاهده و دریافت سند زرین بلوپرینت</span>
                 <CheckCircle2 className="w-4 h-4" />
               </button>
             ) : (
               <button
                 onClick={onGoToNextModule}
-                className="flex items-center gap-2 bg-petronas-primary hover:bg-petronas-secondary text-canvas font-mono font-bold text-xs uppercase px-4 py-2 rounded border border-petronas-secondary shadow-petronas-btn transition"
+                className="flex items-center gap-2 bg-primary text-on-primary font-garamond font-bold text-sm px-5 py-2.5 rounded-xl shadow-md transition-all active:scale-95"
               >
-                <span>ادامه به ماژول بعد</span>
-                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>گام بعدی در کتاب</span>
+                <ArrowLeft className="w-4 h-4" />
               </button>
             )}
           </div>

@@ -1,160 +1,426 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BookCurriculum } from '../types/curriculum';
-import { Compass, RotateCcw, Zap, Brain, MessageSquare, ArrowLeft, ShieldCheck, BookOpen, Terminal } from 'lucide-react';
+import { Sparkles, ArrowLeft, BookOpen, Flame, CloudRain } from 'lucide-react';
 
 interface BookSelectorProps {
   books: BookCurriculum[];
   onSelectBook: (book: BookCurriculum) => void;
   savedStates: Record<string, Record<string, any>>;
+  isCandlelit: boolean;
+  onToggleCandlelight: () => void;
 }
-
-const ICON_MAP: Record<string, React.ReactNode> = {
-  Compass: <Compass className="w-5 h-5 text-petronas-secondary" />,
-  RotateCcw: <RotateCcw className="w-5 h-5 text-petronas-secondary" />,
-  Zap: <Zap className="w-5 h-5 text-petronas-secondary" />,
-  Brain: <Brain className="w-5 h-5 text-petronas-secondary" />,
-  MessageSquare: <MessageSquare className="w-5 h-5 text-petronas-secondary" />,
-};
 
 export const BookSelector: React.FC<BookSelectorProps> = ({
   books,
   onSelectBook,
   savedStates,
+  isCandlelit,
+  onToggleCandlelight,
 }) => {
-  return (
-    <div className="py-6 sm:py-8 px-4 max-w-4xl mx-auto space-y-6">
-      {/* Precision Hero Banner */}
-      <div className="relative rounded bg-surface border border-[#232B3B] p-6 sm:p-8 overflow-hidden shadow-sm">
-        {/* Ambient subtle glow */}
-        <div className="absolute -top-16 -right-16 w-56 h-56 bg-petronas-primary/10 rounded-full blur-3xl pointer-events-none" />
+  const [hoveredBookId, setHoveredBookId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [isRainPlaying, setIsRainPlaying] = useState<boolean>(false);
 
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="inline-flex items-center gap-2 bg-petronas-dark border border-petronas-primary/40 px-2.5 py-1 rounded-sm text-[11px] font-mono font-semibold text-petronas-secondary">
-            <span className="w-1.5 h-1.5 rounded-full bg-petronas-secondary animate-ping" />
-            <span>APPLIED TRANSFORMATION // BEHAVIORAL ARCHITECTURE</span>
+  // Book Spines physical styling mapping (matching Magic Books Scriptorium)
+  const SPINE_STYLES: Record<string, {
+    bg: string;
+    text: string;
+    authorColor: string;
+    height: string;
+    width: string;
+    ribbonColor?: string;
+    hasGildedRibs?: boolean;
+    emblem: string;
+    texture?: string;
+  }> = {
+    'power-of-habit': {
+      bg: 'bg-[#d39e24]',
+      text: 'text-[#241a00]',
+      authorColor: 'text-[#3d2c02]',
+      height: 'h-[250px]',
+      width: 'w-[54px] sm:w-[58px]',
+      ribbonColor: 'bg-[#93000a]',
+      hasGildedRibs: true,
+      emblem: 'cyclone',
+    },
+    'atomic-habits': {
+      bg: 'bg-[#ede5d0]',
+      text: 'text-[#423a2f]',
+      authorColor: 'text-[#6b5f4d]',
+      height: 'h-[242px]',
+      width: 'w-[50px] sm:w-[54px]',
+      emblem: 'flare',
+    },
+    'situated': {
+      bg: 'bg-[#1a2e20]',
+      text: 'text-[#f2ca50]',
+      authorColor: 'text-[#9eb5a1]',
+      height: 'h-[256px]',
+      width: 'w-[52px] sm:w-[56px]',
+      hasGildedRibs: true,
+      emblem: 'compass_rose',
+    },
+    'thinking-fast-slow': {
+      bg: 'bg-[#42151c]',
+      text: 'text-[#ffe088]',
+      authorColor: 'text-[#dec1b1]',
+      height: 'h-[250px]',
+      width: 'w-[56px] sm:w-[60px]',
+      hasGildedRibs: true,
+      emblem: 'neurology',
+    },
+    'crucial-conversations': {
+      bg: 'bg-[#162740]',
+      text: 'text-[#f2ca50]',
+      authorColor: 'text-[#90a8cb]',
+      height: 'h-[238px]',
+      width: 'w-[50px] sm:w-[54px]',
+      ribbonColor: 'bg-[#b7d1f2]',
+      emblem: 'forum',
+    },
+  };
+
+  const completedCount = Object.keys(savedStates).filter(
+    (id) => savedStates[id]?.status === 'completed_blueprint'
+  ).length;
+
+  return (
+    <div className="py-6 sm:py-8 px-3 sm:px-4 max-w-4xl mx-auto space-y-7">
+      {/* Sanctum Vault Header */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="relative w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center p-1 shadow-[0_2px_12px_rgba(212,175,55,0.25)] border border-primary/30">
+            <span className="material-symbols-outlined text-[22px] text-primary drop-shadow-[0_0_8px_rgba(242,202,80,0.6)]">
+              local_library
+            </span>
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(242,202,80,0.8)]" />
+              <span className="font-sans text-[11px] text-primary tracking-widest uppercase font-semibold">
+                Sanctum Codex Vault
+              </span>
+            </div>
+            <h2 className="font-garamond text-xl sm:text-2xl font-bold text-on-surface leading-tight">
+              کتابخانه مدل‌های ذهنی کاربردی (The Grand Scriptorium)
+            </h2>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 bg-surface-container-high px-3 py-1.5 rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)] border border-outline-variant/30">
+          <span className="material-symbols-outlined text-[16px] text-primary">
+            local_fire_department
+          </span>
+          <span className="font-sans text-xs text-secondary font-semibold">
+            {completedCount} بلوپرینت کامل‌شده
+          </span>
+        </div>
+      </div>
+
+      {/* Filter Arcana Scrolls (Horizontal Pills) */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-nowrap">
+        <button
+          onClick={() => setActiveCategory('all')}
+          className={`font-sans text-xs px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all active:scale-95 ${
+            activeCategory === 'all'
+              ? 'bg-primary text-on-primary font-bold shadow-[0_2px_10px_rgba(242,202,80,0.35)]'
+              : 'bg-surface-container text-on-surface-variant hover:text-primary'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[15px]">auto_stories</span>
+          <span>تمام کتاب‌ها (All Codices)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveCategory('habits')}
+          className={`font-sans text-xs px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all active:scale-95 ${
+            activeCategory === 'habits'
+              ? 'bg-primary text-on-primary font-bold shadow-[0_2px_10px_rgba(242,202,80,0.35)]'
+              : 'bg-surface-container text-on-surface-variant hover:text-primary'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[15px]">flare</span>
+          <span>کیمیای عادت (Habit Alchemy)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveCategory('cognition')}
+          className={`font-sans text-xs px-3.5 py-1.5 rounded-full flex items-center gap-1.5 transition-all active:scale-95 ${
+            activeCategory === 'cognition'
+              ? 'bg-primary text-on-primary font-bold shadow-[0_2px_10px_rgba(242,202,80,0.35)]'
+              : 'bg-surface-container text-on-surface-variant hover:text-primary'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[15px]">psychology</span>
+          <span>علوم شناختی و گفتگو</span>
+        </button>
+      </div>
+
+      {/* ========================================================= */}
+      {/* 3D PHYSICAL BOOKSHELF SECTION (The Folio Shelf) */}
+      {/* ========================================================= */}
+      <div className="relative w-full flex flex-col pt-2">
+        {/* Shelf Upper Shadow Cavity (Deep Bookcase Recess) */}
+        <div className="relative w-full h-[300px] bg-gradient-to-b from-[#090b0e] via-[#12100d] to-[#1d1712] rounded-t-2xl px-4 pt-6 flex items-end justify-around sm:justify-center sm:gap-6 overflow-visible shadow-shelf-recess border-t border-x border-[#2a1a10]">
+          {/* Ambient Candlelight Radial Halo */}
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_100%,rgba(242,202,80,0.2)_0%,transparent_65%)]" />
+
+          {/* Interactive Spines */}
+          {books.map((book) => {
+            const style = SPINE_STYLES[book.id] || {
+              bg: 'bg-[#d39e24]',
+              text: 'text-[#241a00]',
+              authorColor: 'text-[#3d2c02]',
+              height: 'h-[246px]',
+              width: 'w-[54px]',
+              emblem: 'menu_book',
+            };
+
+            const isHovered = hoveredBookId === book.id;
+            const userState = savedStates[book.id];
+            const isCompleted = userState?.status === 'completed_blueprint';
+
+            return (
+              <div
+                key={book.id}
+                onMouseEnter={() => setHoveredBookId(book.id)}
+                onMouseLeave={() => setHoveredBookId(null)}
+                onClick={() => onSelectBook(book)}
+                className={`group relative flex flex-col items-center cursor-pointer transition-all duration-300 z-20 ${
+                  isHovered ? '-translate-y-5 scale-[1.03]' : 'hover:-translate-y-2'
+                }`}
+              >
+                {/* Glowing Aura Behind Drawn Tome */}
+                {isHovered && (
+                  <div className="absolute -inset-2 bg-primary/30 blur-md rounded-md pointer-events-none" />
+                )}
+
+                {/* Pulled Tome Tooltip */}
+                {isHovered && (
+                  <div className="absolute -top-11 z-40 whitespace-nowrap bg-surface-container-lowest/95 text-primary border border-primary/50 px-2.5 py-1 rounded-full shadow-[0_4px_16px_rgba(242,202,80,0.4)] backdrop-blur-md flex items-center gap-1.5 animate-bounce">
+                    <span className="material-symbols-outlined text-[13px]">touch_app</span>
+                    <span className="font-sans text-[10px] font-bold tracking-wide">
+                      کلیک برای مطالعه
+                    </span>
+                  </div>
+                )}
+
+                {/* Hanging Ribbon Bookmark */}
+                {style.ribbonColor && (
+                  <div
+                    className={`absolute -top-3.5 right-2 w-2.5 h-10 ${style.ribbonColor} rounded-b-sm shadow-[0_2px_4px_rgba(0,0,0,0.6)] flex items-end justify-center pb-0.5 z-30`}
+                  >
+                    <div className="w-1 h-1 rounded-full bg-primary-fixed" />
+                  </div>
+                )}
+
+                {/* Spine Body */}
+                <div
+                  className={`relative ${style.width} ${style.height} ${style.bg} rounded-t-sm flex flex-col justify-between items-center py-3 shadow-spine-depth transition-shadow duration-300`}
+                >
+                  {/* Top Fabric Headband */}
+                  <div className="w-full h-1.5 bg-black/30 shadow-inner mb-1" />
+
+                  {/* Raised Ribs & Vertical Title */}
+                  <div className="w-full flex flex-col gap-6 items-center px-1">
+                    {style.hasGildedRibs && (
+                      <div className="w-full h-1 bg-black/25 shadow-[0_1px_1px_rgba(255,255,255,0.3)] rounded-full" />
+                    )}
+
+                    <div className="flex flex-col items-center">
+                      <span className="material-symbols-outlined text-[15px] opacity-80 mb-1.5">
+                        {style.emblem}
+                      </span>
+                      <span
+                        className={`font-garamond text-[12px] sm:text-[13px] ${style.text} font-bold tracking-wide uppercase [writing-mode:vertical-rl] rotate-180 drop-shadow-[0_1px_0_rgba(255,255,255,0.2)]`}
+                      >
+                        {book.titleEn.split(':')[0]}
+                      </span>
+                    </div>
+
+                    {style.hasGildedRibs && (
+                      <div className="w-full h-1 bg-black/25 shadow-[0_1px_1px_rgba(255,255,255,0.3)] rounded-full" />
+                    )}
+                  </div>
+
+                  {/* Bottom Author & Stamp */}
+                  <div className="flex flex-col items-center gap-1">
+                    <span
+                      className={`font-sans text-[8px] ${style.authorColor} tracking-wider uppercase [writing-mode:vertical-rl] rotate-180 font-bold`}
+                    >
+                      {book.authorEn.split(' ')[book.authorEn.split(' ').length - 1]}
+                    </span>
+                    <div className="w-3.5 h-3.5 rounded-full bg-black/20 flex items-center justify-center text-[8px] font-garamond font-bold">
+                      {isCompleted ? '✓' : '✦'}
+                    </div>
+                  </div>
+
+                  {/* Bottom Headband */}
+                  <div className="w-full h-1 bg-black/30 shadow-inner mt-1" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* SHELF WOOD PLANK (3D Thick Aged Mahogany) */}
+        <div className="relative w-full">
+          {/* Beveled Top Edge (Catches Candlelight) */}
+          <div className="w-full h-3 bg-gradient-to-r from-[#59341c] via-[#85502c] to-[#59341c] shadow-[inset_0_1px_2px_rgba(255,255,255,0.25)]" />
+
+          {/* Main Wood Face with Brass Nameplate */}
+          <div className="w-full h-8 bg-gradient-to-b from-[#382012] to-[#211209] flex items-center justify-between px-4 sm:px-6 shadow-shelf-plank">
+            {/* Vintage Brass Bracket Left */}
+            <div className="w-3 h-3 rounded-full bg-[#826932] shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] flex items-center justify-center">
+              <div className="w-1 h-1 rounded-full bg-[#3d2e11]" />
+            </div>
+
+            {/* Brass Center Label Holder */}
+            <div className="bg-gradient-to-b from-[#8f753c] via-[#bba15a] to-[#735c2d] px-4 py-0.5 rounded-xs flex items-center gap-2 shadow-[0_2px_5px_rgba(0,0,0,0.6)]">
+              <span className="material-symbols-outlined text-[13px] text-[#261c06]">
+                auto_stories
+              </span>
+              <span className="font-sans text-[10px] sm:text-[11px] text-[#241a00] font-bold tracking-widest uppercase">
+                Tier I • Primus Arcana // ۵ جلد حکمت عملی
+              </span>
+            </div>
+
+            {/* Vintage Brass Bracket Right */}
+            <div className="w-3 h-3 rounded-full bg-[#826932] shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] flex items-center justify-center">
+              <div className="w-1 h-1 rounded-full bg-[#3d2e11]" />
+            </div>
           </div>
 
-          <span className="font-mono text-[11px] text-silver-graphite uppercase tracking-wider hidden sm:inline">
-            CORE PLATFORM v2.5
+          {/* Underside Drop Shadow */}
+          <div className="w-full h-5 bg-gradient-to-b from-[#110905] to-transparent" />
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* DETAILED CODICES LIST (Modern Manuscript Cards) */}
+      {/* ========================================================= */}
+      <div className="pt-2">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px] text-primary">menu_book</span>
+            <h3 className="text-base font-bold text-on-surface font-garamond">
+              فهرست تفصیلی مجلدات (The Codices)
+            </h3>
+          </div>
+          <span className="text-xs text-secondary font-sans">
+            انتخاب مستقیم برای شروع جلسه
           </span>
         </div>
 
-        <h2 className="text-xl sm:text-2xl font-bold text-silver-platinum mb-3 font-heading tracking-tight leading-snug">
-          خلاصه‌خوانی منفعل را کنار بگذارید؛ مدل‌های ذهنی را در زندگی واقعی مهندسی کنید.
-        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {books.map((book) => {
+            const userState = savedStates[book.id];
+            const hasProgress = userState && Object.keys(userState).some((k) => Boolean(userState[k]));
+            const isCompleted = userState?.status === 'completed_blueprint';
 
-        <p className="text-sm text-silver-aero leading-relaxed max-w-2xl mb-6">
-          به جای نقل‌قول مستقیم، سازوکار عصب‌شناختی و روان‌شناختی ۵ کتاب برجسته را گام‌به‌گام تحلیل کرده و همراه با هوش مصنوعی (Gemini 2.5 Flash)، برای عادات و چالش‌های خود «بلوپرینت ۴۸ ساعته» طراحی کنید.
-        </p>
-
-        {/* Technical Spec Badges */}
-        <div className="flex flex-wrap gap-2.5 text-xs font-mono">
-          <div className="flex items-center gap-1.5 bg-surface-low border border-[#232B3B] px-2.5 py-1 rounded-sm text-silver-aero">
-            <ShieldCheck className="w-3.5 h-3.5 text-petronas-tertiary" />
-            <span>COPYRIGHT-SAFE SYNTHESIS</span>
-          </div>
-          <div className="flex items-center gap-1.5 bg-surface-low border border-[#232B3B] px-2.5 py-1 rounded-sm text-silver-aero">
-            <span className="w-2 h-2 rounded-full bg-petronas-secondary" />
-            <span>ZERO-COST ARCHITECTURE (&lt;$0.001)</span>
-          </div>
-          <div className="flex items-center gap-1.5 bg-surface-low border border-[#232B3B] px-2.5 py-1 rounded-sm text-silver-aero">
-            <span>WEB SPEECH API // DUAL VOICE</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Catalog Header */}
-      <div className="flex items-center justify-between pt-2">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-sm bg-petronas-primary" />
-          <h3 className="text-sm sm:text-base font-bold text-silver-platinum font-heading">
-            کاتالوگ ۵ کتاب پرچمدار
-          </h3>
-        </div>
-        <span className="font-mono text-[11px] text-petronas-secondary bg-petronas-dark border border-petronas-primary/40 px-2.5 py-0.5 rounded-sm">
-          5 ACTIVE TRACKS
-        </span>
-      </div>
-
-      {/* Books Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-        {books.map((book, index) => {
-          const userState = savedStates[book.id];
-          const hasProgress = userState && Object.keys(userState).some((k) => Boolean(userState[k]));
-          const isCompleted = userState?.status === 'completed_blueprint';
-
-          return (
-            <div
-              key={book.id}
-              onClick={() => onSelectBook(book)}
-              className="group relative bg-surface hover:bg-surface-high border border-[#232B3B] hover:border-petronas-secondary/50 rounded p-5 transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-sm hover:shadow-telemetry-glow"
-            >
-              <div>
-                {/* Header Row: Sector ID & Status */}
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded bg-surface-low border border-[#232B3B] flex items-center justify-center group-hover:border-petronas-primary/60 transition">
-                      {ICON_MAP[book.iconName] || <BookOpen className="w-5 h-5 text-petronas-secondary" />}
+            return (
+              <div
+                key={book.id}
+                onClick={() => onSelectBook(book)}
+                className="group relative bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 hover:border-primary/60 rounded-xl p-5 transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-sm hover:shadow-gold-glow"
+              >
+                <div>
+                  {/* Top Row: Icon & Status */}
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-surface-container-highest border border-primary/30 text-primary flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+                      <BookOpen className="w-5 h-5 text-primary" />
                     </div>
+
                     <div>
-                      <span className="font-mono text-[10px] text-petronas-secondary tracking-widest block uppercase">
-                        SECTOR-0{index + 1}
-                      </span>
-                      <h4 className="text-base font-bold text-silver-platinum group-hover:text-petronas-secondary transition-colors leading-snug">
-                        {book.titleFa}
-                      </h4>
+                      {isCompleted ? (
+                        <span className="text-[11px] font-sans font-bold text-primary bg-primary/10 border border-primary/40 px-2.5 py-0.5 rounded-full">
+                          ✓ بلوپرینت تکمیل شد
+                        </span>
+                      ) : hasProgress ? (
+                        <span className="text-[11px] font-sans font-semibold text-secondary bg-surface-container-highest border border-secondary/40 px-2.5 py-0.5 rounded-full">
+                          در جریان
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-sans text-on-surface-variant bg-surface-container-lowest px-2.5 py-0.5 rounded-full">
+                          آماده شروع
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  {/* Status Indicator */}
-                  <div>
-                    {isCompleted ? (
-                      <span className="font-mono text-[10px] text-petronas-tertiary bg-surface-low border border-petronas-tertiary/40 px-2 py-0.5 rounded-sm font-semibold">
-                        ✓ BLUEPRINT COMPLETE
-                      </span>
-                    ) : hasProgress ? (
-                      <span className="font-mono text-[10px] text-amber-400 bg-surface-low border border-amber-500/40 px-2 py-0.5 rounded-sm font-semibold">
-                        RUNNING
-                      </span>
-                    ) : (
-                      <span className="font-mono text-[10px] text-silver-graphite bg-surface-low border border-[#232B3B] px-2 py-0.5 rounded-sm">
-                        STANDBY
-                      </span>
-                    )}
+                  {/* Title & Author */}
+                  <h4 className="text-base sm:text-lg font-bold text-on-surface font-garamond group-hover:text-primary transition-colors leading-tight mb-1">
+                    {book.titleFa}
+                  </h4>
+                  <p className="text-xs text-secondary font-sans mb-3">
+                    نویسنده: <span className="text-on-surface font-medium">{book.authorFa}</span> ({book.authorEn})
+                  </p>
+
+                  {/* Framework Badge */}
+                  <div className="bg-surface-container-lowest/80 border border-outline-variant/40 text-[11px] text-primary px-3 py-1 rounded-md mb-3 font-sans inline-block">
+                    مدل: {book.frameworkNameFa}
+                  </div>
+
+                  <p className="text-xs text-on-surface-variant line-clamp-2 leading-relaxed mb-4">
+                    {book.taglineFa}
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="pt-3 border-t border-outline-variant/30 flex items-center justify-between text-xs font-sans">
+                  <span className="text-on-surface-variant">
+                    {book.modules.length} ماژول (~۱۵ دقیقه)
+                  </span>
+
+                  <div className="flex items-center gap-1 text-primary font-bold group-hover:translate-x-[-3px] transition-transform">
+                    <span>{hasProgress ? 'ادامه جلسه' : 'ورود به اسکریپتوریوم'}</span>
+                    <ArrowLeft className="w-3.5 h-3.5" />
                   </div>
                 </div>
-
-                {/* Author Info */}
-                <div className="text-xs text-silver-aero mb-3">
-                  نویسنده: <span className="text-silver-platinum font-medium">{book.authorFa}</span> ({book.authorEn})
-                </div>
-
-                {/* Mental Model Pill */}
-                <div className="bg-surface-low border border-[#232B3B] text-[11px] text-petronas-secondary px-2.5 py-1 rounded-sm mb-3 font-mono inline-block">
-                  MODEL: {book.frameworkNameFa}
-                </div>
-
-                {/* Tagline */}
-                <p className="text-xs text-silver-aero line-clamp-2 leading-relaxed mb-4">
-                  {book.taglineFa}
-                </p>
               </div>
+            );
+          })}
+        </div>
+      </div>
 
-              {/* Card Footer */}
-              <div className="pt-3 border-t border-[#232B3B] flex items-center justify-between text-xs">
-                <div className="font-mono text-[11px] text-silver-graphite">
-                  {book.modules.length} ماژول (~۱۵ دقیقه)
-                </div>
+      {/* ========================================================= */}
+      {/* FLOATING SANCTUM AMBIANCE HUD */}
+      {/* ========================================================= */}
+      <div className="sticky bottom-3 w-full z-40">
+        <div className="relative w-full bg-surface-container-high/90 backdrop-blur-xl p-2.5 rounded-2xl flex items-center justify-between shadow-[0_8px_32px_rgba(0,0,0,0.7)] border border-outline-variant/50">
+          <div className="flex items-center gap-2">
+            {/* Candle Toggle */}
+            <button
+              onClick={onToggleCandlelight}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-sans transition-all active:scale-95 ${
+                isCandlelit
+                  ? 'bg-surface-container-highest text-primary border border-primary/50 shadow-[0_0_10px_rgba(242,202,80,0.3)]'
+                  : 'bg-surface-container text-on-surface-variant hover:text-primary'
+              }`}
+            >
+              <Flame className={`w-4 h-4 ${isCandlelit ? 'text-primary fill-primary animate-pulse' : ''}`} />
+              <span className="hidden sm:inline">نور شمع</span>
+            </button>
 
-                <div className="flex items-center gap-1.5 font-mono text-xs font-semibold text-petronas-secondary group-hover:translate-x-[-3px] transition-transform">
-                  <Terminal className="w-3.5 h-3.5" />
-                  <span>{hasProgress ? 'ادامه جلسه' : 'شروع یادگیری'}</span>
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            </div>
-          );
-        })}
+            {/* Rain Sound Toggle */}
+            <button
+              onClick={() => setIsRainPlaying((prev) => !prev)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-sans transition-all active:scale-95 ${
+                isRainPlaying
+                  ? 'bg-surface-container-highest text-tertiary border border-tertiary/50'
+                  : 'bg-surface-container text-on-surface-variant hover:text-tertiary'
+              }`}
+            >
+              <CloudRain className="w-4 h-4" />
+              <span>باران آرام: {isRainPlaying ? 'روشن' : 'خاموش'}</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1 text-[11px] font-sans text-secondary">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <span>اتاق مطالعه زنده</span>
+          </div>
+        </div>
       </div>
     </div>
   );
