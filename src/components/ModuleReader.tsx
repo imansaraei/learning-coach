@@ -9,7 +9,6 @@ import {
   MicOff,
   Volume2,
   Bookmark,
-  Sparkles,
   ArrowRight,
   ArrowLeft,
   CheckCircle2,
@@ -58,6 +57,73 @@ const getPreCraftedSparks = (bookId: string, moduleIdx: number): string[] => {
   }
 };
 
+// Helper to extract personalized user context for diagram steps
+const getUserContextForStep = (
+  stepLabel: string,
+  userState: Record<string, any>
+): string | null => {
+  if (!userState || Object.keys(userState).length === 0) return null;
+
+  const normalized = stepLabel.toLowerCase();
+
+  const getVal = (keys: string[]): string | null => {
+    for (const key of keys) {
+      const val = userState[key];
+      if (typeof val === 'string' && val.trim().length > 0) {
+        return val.trim();
+      }
+    }
+    return null;
+  };
+
+  let matched: string | null = null;
+
+  if (normalized.includes('نشانه') || normalized.includes('cue')) {
+    matched = getVal(['specific_cue', 'cue', 'cue_category']);
+  } else if (normalized.includes('روتین') || normalized.includes('routine') || normalized.includes('پاسخ رفتاری')) {
+    if (normalized.includes('جدید') || normalized.includes('سازنده') || normalized.includes('جایگزین')) {
+      matched = getVal(['golden_rule_replacement_routine', 'action', 'new_routine']);
+    } else {
+      matched = getVal(['undesirable_routine', 'routine', 'target_behavior_box3']);
+    }
+  } else if (normalized.includes('پاداش') || normalized.includes('reward') || normalized.includes('اشتیاق') || normalized.includes('craving')) {
+    matched = getVal(['real_craving_and_reward', 'reward', 'craving']);
+  } else if (normalized.includes('هویت') || normalized.includes('identity')) {
+    matched = getVal(['target_identity', 'identity']);
+  } else if (normalized.includes('نتایج') || normalized.includes('outcomes')) {
+    matched = getVal(['current_outcome_focus', 'outcome']);
+  } else if (normalized.includes('لنگر') || normalized.includes('عادت فعلی') || normalized.includes('anchor')) {
+    matched = getVal(['habit_stacking_rule', 'anchor']);
+  } else if (normalized.includes('الحاق') || normalized.includes('عادت جدید') || normalized.includes('۲ دقیقه') || normalized.includes('2 دقیقه')) {
+    matched = getVal(['two_minute_version', 'action']);
+  } else if (normalized.includes('جعبه ۱') || normalized.includes('جعبه 1') || normalized.includes('عینی') || normalized.includes('بالادست') || normalized.includes('فضای شخصی')) {
+    matched = getVal(['upstream_redesign_strategy', 'objective_environment_box1']);
+  } else if (normalized.includes('جعبه ۲') || normalized.includes('جعبه 2') || normalized.includes('تفسیر')) {
+    matched = getVal(['internal_interpretations_box2']);
+  } else if (normalized.includes('جعبه ۳') || normalized.includes('جعبه 3') || normalized.includes('پایین‌دست')) {
+    matched = getVal(['target_behavior_box3', 'undesirable_routine']);
+  } else if (normalized.includes('سیستم ۱') || normalized.includes('سیستم 1')) {
+    matched = getVal(['impulsive_decision_context', 'system1_triggers_and_heuristics']);
+  } else if (normalized.includes('سیستم ۲') || normalized.includes('سیستم 2') || normalized.includes('وقفه')) {
+    matched = getVal(['system2_interception_protocol']);
+  } else if (normalized.includes('منافع بالا') || normalized.includes('گفتگو') || normalized.includes('high stakes')) {
+    matched = getVal(['high_stakes_situation']);
+  } else if (normalized.includes('انگیزه') || normalized.includes('هدف مشترک')) {
+    matched = getVal(['mutual_purpose_definition']);
+  } else if (normalized.includes('کنتراست') || normalized.includes('شفاف‌سازی')) {
+    matched = getVal(['contrasting_statement_ready']);
+  } else if (normalized.includes('همتا') || normalized.includes('پیرامون') || normalized.includes('مربی')) {
+    const val = userState['applied_situational_levers'];
+    if (Array.isArray(val) && val.length > 0) return val.join('، ');
+    if (typeof val === 'string' && val.trim().length > 0) return val.trim();
+  }
+
+  if (!matched) return null;
+
+  const clean = matched.replace(/^["'«]+|["'»]+$/g, '').trim();
+  return clean.length > 36 ? `${clean.slice(0, 33)}...` : clean;
+};
+
 export const ModuleReader: React.FC<ModuleReaderProps> = ({
   book,
   moduleIndex,
@@ -92,8 +158,9 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
   // Mobile/Single page sub-leaf: 0 = Lesson & Diagram, 1 = Living Inscription & Response
   const [mobileLeaf, setMobileLeaf] = useState<0 | 1>(0);
 
-  // Page turn flip state
+  // Page turn flip state & direction
   const [isTurningPage, setIsTurningPage] = useState<boolean>(false);
+  const [turnDirection, setTurnDirection] = useState<'forward' | 'backward'>('forward');
 
   const reflectionSparks = getPreCraftedSparks(book.id, moduleIndex);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -132,13 +199,16 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
     };
   }, [moduleIndex, book.id]);
 
-  const triggerPageTurn = (action: () => void) => {
+  const triggerPageTurn = (action: () => void, direction: 'forward' | 'backward' = 'forward') => {
+    setTurnDirection(direction);
     setIsTurningPage(true);
     playPageTurnSound();
     setTimeout(() => {
       action();
-      setIsTurningPage(false);
-    }, 380);
+      setTimeout(() => {
+        setIsTurningPage(false);
+      }, 40);
+    }, 360);
   };
 
   const toggleListening = () => {
@@ -252,36 +322,56 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
         </div>
       </div>
 
-      {/* Schematicus Mentis: The Arcane Illustration Engraving */}
+      {/* Classical Manuscript Engraving: Diagram of Behavioral Structure */}
       {currentModule.staticCoreLesson.diagramSteps && (
         <div className="my-auto bg-[#eee4d0]/90 rounded-xl p-3 sm:p-4 border border-[#aa936d]/40 shadow-[inset_0_1px_3px_rgba(42,26,16,0.12)]">
           <div className="flex items-center justify-between border-b border-[#aa936d]/30 pb-1.5 mb-2">
-            <span className="font-garamond text-xs font-bold text-[#694e24] tracking-wider uppercase flex items-center gap-1">
-              <span className="material-symbols-outlined text-[15px]">schema</span>
-              Schematicus Mentis
+            <span className="font-garamond text-xs font-bold text-[#694e24] flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[15px] opacity-80">account_tree</span>
+              <span>طرح‌وارهٔ ساختار رفتار</span>
             </span>
-            <span className="font-garamond text-[10px] italic text-[#846b4b]">
-              مدل ذهنی رفتار
+            <span className="font-garamond text-[11px] text-[#846b4b] italic">
+              {currentModule.frameworkStep.split(':')[0]}
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            {currentModule.staticCoreLesson.diagramSteps.map((step, idx) => (
-              <div
-                key={idx}
-                className="bg-[#fcfaf3] border border-[#d5c3aa] rounded-md p-2 flex flex-col justify-between shadow-2xs"
-              >
-                <div className="flex items-center gap-1 font-garamond text-xs text-[#574236] font-bold mb-0.5">
-                  <span className="w-4 h-4 rounded-full bg-[#d4af37]/30 text-[#3c2f00] text-[10px] flex items-center justify-center font-bold">
-                    {idx + 1}
-                  </span>
-                  <span className="truncate">{step.label}</span>
+          <div
+            className="grid gap-2"
+            style={{
+              gridTemplateColumns: `repeat(${Math.min(currentModule.staticCoreLesson.diagramSteps.length, 4)}, minmax(0, 1fr))`,
+            }}
+          >
+            {currentModule.staticCoreLesson.diagramSteps.map((step, idx) => {
+              const userAnnotation = getUserContextForStep(step.label, userState);
+              return (
+                <div
+                  key={idx}
+                  className="bg-[#fcfaf3] border border-[#d5c3aa] rounded-md p-2 flex flex-col justify-between shadow-2xs transition-colors"
+                >
+                  <div>
+                    <div className="flex items-center gap-1 font-garamond text-xs text-[#574236] font-bold mb-0.5">
+                      <span className="w-4 h-4 rounded-full bg-[#d4af37]/30 text-[#3c2f00] text-[10px] flex items-center justify-center font-bold">
+                        {idx + 1}
+                      </span>
+                      <span className="truncate">{step.label}</span>
+                    </div>
+
+                    {userAnnotation && (
+                      <div
+                        className="my-1 px-1.5 py-0.5 rounded bg-[#e8dbc3]/70 border border-[#c4ae8f]/50 text-[10px] text-[#1c2430] font-vazir font-semibold leading-tight line-clamp-1"
+                        title={userAnnotation}
+                      >
+                        «{userAnnotation}»
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-[11px] text-[#3f382f] leading-snug font-vazir line-clamp-2 mt-0.5">
+                    {step.description}
+                  </p>
                 </div>
-                <p className="text-[11px] text-[#3f382f] leading-snug font-vazir line-clamp-2">
-                  {step.description}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="mt-2 text-center font-garamond text-[11px] text-[#4f3c21] italic bg-[#fbf8f0]/95 px-2 py-1 rounded border border-[#aa936d]/20">
@@ -295,7 +385,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
         <span>صحیفه {moduleIndex * 2 + 1}</span>
         {!isDoublePage && (
           <button
-            onClick={() => triggerPageTurn(() => setMobileLeaf(1))}
+            onClick={() => triggerPageTurn(() => setMobileLeaf(1), 'forward')}
             className="flex items-center gap-1 text-xs font-bold text-[#694e24] hover:text-[#22180f] transition-colors"
           >
             <span>ورق زدن به صفحه تحریر</span>
@@ -314,21 +404,17 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
       {/* Top Header of Inscription Page */}
       <div>
         <div className="flex items-center justify-between border-b border-[#aa936d]/30 pb-2 mb-3">
-          <span className="font-garamond text-xs tracking-[0.2em] text-[#785b30] uppercase font-bold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-ping" />
-            DIARIUM VIVUM · ثبت بر روی نسخه خطی
+          <span className="font-garamond text-xs tracking-[0.15em] text-[#785b30] font-bold">
+            {book.titleFa}
           </span>
           <span className="font-garamond text-xs text-[#846b4b] italic">
-            پاسخ زنده به کتاب
+            صحیفهٔ تحریر و تأمل
           </span>
         </div>
 
-        {/* The Living Book Asks: Inscribed in iron-gall ink */}
+        {/* The Living Book Inquires: Inscribed directly in iron-gall ink */}
         <div className="mb-3">
-          <span className="font-garamond text-xs text-[#785b30] uppercase tracking-wider block font-bold mb-1">
-            پرسش زندهٔ کتاب (The Living Book Inquires):
-          </span>
-          <h3 className="font-garamond text-base sm:text-lg font-bold text-[#22180f] leading-snug">
+          <h3 className="font-garamond text-base sm:text-lg font-bold text-[#1c2430] leading-snug">
             <LivingInkText
               text={currentModule.interactivePrompt.question}
               speedMs={20}
@@ -359,9 +445,6 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
         {/* Ruled Parchment Notebook Lines (User writes directly on the paper) */}
         <form onSubmit={handleSubmitInscription} className="space-y-3">
           <div className="relative w-full rounded-lg bg-[#eee4d0]/30 border border-[#d5c3aa]/70 p-3 shadow-inner">
-            <label className="block font-garamond text-[11px] text-[#785b30] uppercase tracking-wider mb-1 font-bold">
-              دست‌خط شما بر اوراق کتاب (Your Inscription):
-            </label>
             <textarea
               ref={textareaRef}
               rows={coachingResult ? 2 : 4}
@@ -405,7 +488,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
                   ) : (
                     <>
                       <Feather className="w-3.5 h-3.5" />
-                      <span>ثبت در اوراق کتاب (Inscribe)</span>
+                      <span>ثبت بر صفحه</span>
                     </>
                   )}
                 </button>
@@ -418,17 +501,10 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
           )}
         </form>
 
-        {/* Scholar Annotation (bleeds into paper below user confession) */}
+        {/* Scholar Living Ink Annotation (bleeds naturally into paper) */}
         {coachingResult && (
-          <div className="mt-4 pt-3 border-t-2 border-[#785b30]/40 animate-in fade-in duration-500">
-            <div className="flex items-center gap-1.5 mb-1 text-[#785b30]">
-              <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
-              <span className="font-garamond text-xs font-bold uppercase tracking-wider">
-                پاسخ زندهٔ مربی به این صفحه (Scholar Living Ink):
-              </span>
-            </div>
-
-            <div className="bg-[#eee4d0]/60 border-r-3 border-[#785b30] pr-3 py-2 rounded-l-md font-vazir text-xs sm:text-sm text-[#162744] leading-relaxed mb-2">
+          <div className="mt-3 pt-2.5 border-t border-[#aa936d]/40 animate-in fade-in duration-500">
+            <div className="bg-[#eee4d0]/60 border-r-3 border-[#785b30] pr-3 py-2 rounded-l-md font-vazir text-xs sm:text-sm text-[#162744] leading-relaxed mb-1.5">
               <LivingInkText
                 text={coachingResult.coaching_response}
                 speedMs={20}
@@ -437,9 +513,9 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
             </div>
 
             {coachingResult.next_question && (
-              <div className="font-garamond text-xs font-bold text-[#785b30] italic pr-2">
-                « گام بعدی: {coachingResult.next_question} »
-              </div>
+              <p className="font-garamond text-xs text-[#5c4738] italic pr-2 mt-1 font-semibold">
+                « {coachingResult.next_question} »
+              </p>
             )}
           </div>
         )}
@@ -452,7 +528,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
         {coachingResult ? (
           isLastModule ? (
             <button
-              onClick={() => triggerPageTurn(onShowBlueprint)}
+              onClick={() => triggerPageTurn(onShowBlueprint, 'forward')}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#8c2a1e] text-[#ffe088] font-bold text-xs shadow-md hover:bg-[#a63325] transition-all active:scale-95"
             >
               <span>ورق زدن به طومار زرین بلوپرینت</span>
@@ -460,7 +536,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
             </button>
           ) : (
             <button
-              onClick={() => triggerPageTurn(onGoToNextModule)}
+              onClick={() => triggerPageTurn(onGoToNextModule, 'forward')}
               className="flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#20140c] text-[#f2ca50] font-bold text-xs shadow-md hover:bg-[#342014] transition-all active:scale-95"
             >
               <span>ورق زدن به فصل بعد</span>
@@ -469,7 +545,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
           )
         ) : !isDoublePage ? (
           <button
-            onClick={() => triggerPageTurn(() => setMobileLeaf(0))}
+            onClick={() => triggerPageTurn(() => setMobileLeaf(0), 'backward')}
             className="flex items-center gap-1 text-xs font-bold text-[#694e24] hover:text-[#22180f] transition-colors"
           >
             <ArrowRight className="w-3.5 h-3.5" />
@@ -517,24 +593,30 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
       {/* THE PHYSICAL NON-SCROLLABLE CODEX (Double-Page vs Single-Page)             */}
       {/* ========================================================================= */}
       <div
-        className={`relative transition-all duration-300 ${
-          isTurningPage ? 'scale-[0.985] opacity-90' : 'scale-100 opacity-100'
-        } ${
+        className={`relative preserve-3d transition-all duration-300 ${
           isDoublePage
             ? 'w-full max-w-5xl h-[88vh] max-h-[720px] flex shadow-[0_30px_70px_rgba(0,0,0,0.85),0_0_90px_rgba(25,16,10,0.5)] rounded-2xl overflow-hidden border border-[#523e2b]/60'
             : 'w-full max-w-md h-[92vh] flex shadow-2xl rounded-xl overflow-hidden border border-[#523e2b]/60'
         }`}
+        style={{ perspective: '1200px' }}
       >
         {isDoublePage ? (
           <>
             {/* RIGHT PAGE (In RTL: Leaf A - Classical Chapter Lesson) */}
-            <div className="w-1/2 h-full bg-[#f4eee0] relative overflow-hidden rounded-r-xl border-r border-[#d5c3aa]">
+            <div
+              className={`w-1/2 h-full bg-[#f4eee0] relative overflow-hidden rounded-r-xl border-r border-[#d5c3aa] transition-transform ${
+                isTurningPage && turnDirection === 'backward' ? 'page-turn-curl-right' : ''
+              }`}
+            >
               {/* Paper Tooth Texture */}
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#d5c3aa_1px,transparent_1px)] [background-size:14px_14px] opacity-40 mix-blend-multiply" />
               {/* Spine Gutter Shadow (Left edge of Right Page) */}
               <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#20140c]/25 via-[#20140c]/10 to-transparent z-10" />
               {/* Outer Deckle Shadow */}
               <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-[#20140c]/15 to-transparent z-10" />
+              {isTurningPage && turnDirection === 'backward' && (
+                <div className="page-curl-shadow-overlay-right" />
+              )}
               {renderRightPage()}
             </div>
 
@@ -542,26 +624,49 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
             <div className="w-6 h-full bg-gradient-to-r from-[#20140c]/20 via-[#120a05]/45 to-[#20140c]/20 absolute left-1/2 -translate-x-1/2 z-20 pointer-events-none" />
 
             {/* LEFT PAGE (In RTL: Leaf B - Inscription & Living Scholar Commentary) */}
-            <div className="w-1/2 h-full bg-[#f4eee0] relative overflow-hidden rounded-l-xl border-l border-[#d5c3aa]">
+            <div
+              className={`w-1/2 h-full bg-[#f4eee0] relative overflow-hidden rounded-l-xl border-l border-[#d5c3aa] transition-transform ${
+                isTurningPage && turnDirection === 'forward' ? 'page-turn-curl-left' : ''
+              }`}
+            >
               {/* Paper Tooth Texture */}
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#d5c3aa_1px,transparent_1px)] [background-size:14px_14px] opacity-40 mix-blend-multiply" />
               {/* Spine Gutter Shadow (Right edge of Left Page) */}
               <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#20140c]/25 via-[#20140c]/10 to-transparent z-10" />
               {/* Outer Deckle Shadow */}
               <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-[#20140c]/15 to-transparent z-10" />
+              {isTurningPage && turnDirection === 'forward' && (
+                <div className="page-curl-shadow-overlay-left" />
+              )}
               {renderLeftPage()}
             </div>
           </>
         ) : (
           /* SINGLE PAGE (Mobile / Vertical View) */
-          <div className="w-full h-full bg-[#f4eee0] relative overflow-hidden rounded-xl border border-[#d5c3aa]">
+          <div
+            className={`w-full h-full bg-[#f4eee0] relative overflow-hidden rounded-xl border border-[#d5c3aa] transition-transform ${
+              isTurningPage
+                ? turnDirection === 'forward'
+                  ? 'page-turn-curl-left'
+                  : 'page-turn-curl-right'
+                : ''
+            }`}
+          >
             {/* Paper Tooth Texture */}
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#d5c3aa_1px,transparent_1px)] [background-size:14px_14px] opacity-40 mix-blend-multiply" />
             {/* Right Spine Gutter */}
             <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-7 bg-gradient-to-l from-[#20140c]/20 via-[#20140c]/10 to-transparent z-10" />
             {/* Left Edge Shadow */}
             <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-[#20140c]/12 to-transparent z-10" />
-
+            {isTurningPage && (
+              <div
+                className={
+                  turnDirection === 'forward'
+                    ? 'page-curl-shadow-overlay-left'
+                    : 'page-curl-shadow-overlay-right'
+                }
+              />
+            )}
             {mobileLeaf === 0 ? renderRightPage() : renderLeftPage()}
           </div>
         )}
