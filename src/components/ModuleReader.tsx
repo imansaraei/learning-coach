@@ -320,9 +320,26 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
           <span className="font-garamond text-xs tracking-[0.2em] text-[#785b30] uppercase font-bold">
             LIBER {romanNumeral} · {book.titleEn.split(':')[0]}
           </span>
-          <span className="font-garamond text-xs text-[#846b4b] italic">
-            فصل {romanNumeral}: {currentModule.frameworkStep}
-          </span>
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                if (speechService.isSpeaking()) {
+                  speechService.stop();
+                } else {
+                  speechService.speak(`${currentModule.title}. ${effectiveLesson.headline} ${effectiveLesson.concept}`);
+                }
+              }}
+              className="text-[#785b30] hover:text-[#996515] px-2 py-0.5 rounded-full hover:bg-[#aa936d]/20 border border-[#aa936d]/30 transition-all cursor-pointer flex items-center gap-1"
+              title="پخش/توقف صوت طبیعی فارسی"
+            >
+              <Volume2 className="w-3 h-3" />
+              <span className="text-[10px] font-sans font-medium">صوت طبیعی</span>
+            </button>
+            <span className="font-garamond text-xs text-[#846b4b] italic">
+              فصل {romanNumeral}: {currentModule.frameworkStep}
+            </span>
+          </div>
         </div>
 
         {/* Chapter Title */}

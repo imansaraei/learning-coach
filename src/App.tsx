@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { BOOKS_CURRICULUM } from './data/booksCurriculum';
 import { BookCurriculum, DynamicCoachingResult } from './types/curriculum';
+import { User } from './types/auth';
+import { authService } from './services/authService';
 import { Header } from './components/Header';
 import { BookSelector } from './components/BookSelector';
 import { ModuleReader } from './components/ModuleReader';
 import { LiveStateDrawer } from './components/LiveStateDrawer';
 import { BlueprintArtifactCard } from './components/BlueprintArtifactCard';
 import { SettingsModal } from './components/SettingsModal';
-
-const STORAGE_STATES_KEY = 'learning_coach_saved_user_states';
+import { AuthScreen } from './components/AuthScreen';
+import { AdminModal } from './components/AdminModal';
 
 export const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<User | null>(() => authService.getCurrentUser());
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState<boolean>(false);
+
   const [currentBook, setCurrentBook] = useState<BookCurriculum | null>(null);
   const [currentModuleIndex, setCurrentModuleIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<'catalog' | 'module' | 'blueprint'>('catalog');
@@ -18,23 +23,40 @@ export const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isAudioMuted, setIsAudioMuted] = useState<boolean>(true);
   const [isCandlelit, setIsCandlelit] = useState<boolean>(true); // default warm candlelight ambiance
+
+  // Isolate state per user account
+  const storageKey = currentUser
+    ? `learning_coach_saved_user_states_${currentUser.username}`
+    : 'learning_coach_saved_user_states_guest';
+
   const [savedStates, setSavedStates] = useState<Record<string, Record<string, any>>>(() => {
     if (typeof window === 'undefined') return {};
     try {
-      const stored = localStorage.getItem(STORAGE_STATES_KEY);
+      const stored = localStorage.getItem(storageKey);
       return stored ? JSON.parse(stored) : {};
     } catch {
       return {};
     }
   });
 
+  // Re-load savedStates when active user changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      setSavedStates(stored ? JSON.parse(stored) : {});
+    } catch {
+      setSavedStates({});
+    }
+  }, [currentUser?.username, storageKey]);
+
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_STATES_KEY, JSON.stringify(savedStates));
+      localStorage.setItem(storageKey, JSON.stringify(savedStates));
     } catch (e) {
       console.error('Failed to save state to localStorage:', e);
     }
-  }, [savedStates]);
+  }, [savedStates, storageKey]);
 
   const activeUserState = currentBook
     ? savedStates[currentBook.id] || currentBook.initialUserState
@@ -81,7 +103,7 @@ export const App: React.FC = () => {
           ...bookState,
           ...result.updated_user_state,
           authoredModules: updatedAuthored,
-          ...(result.is_final_blueprint ? { status: 'completed_blueprint' } : {})
+          status: result.is_final_blueprint ? 'completed_blueprint' : 'in_progress'
         }
       };
     });
@@ -97,25 +119,14 @@ export const App: React.FC = () => {
   };
 
   const handleShowBlueprint = () => {
-    if (currentBook) {
-      setSavedStates((prev) => ({
-        ...prev,
-        [currentBook.id]: {
-          ...(prev[currentBook.id] || currentBook.initialUserState),
-          status: 'completed_blueprint'
-        }
-      }));
-    }
     setViewMode('blueprint');
   };
 
   const handleRestartBook = () => {
     if (!currentBook) return;
     setSavedStates((prev) => {
-      const copy = { ...prev };
-      delete copy[currentBook.id];
       return {
-        ...copy,
+        ...prev,
         [currentBook.id]: {
           ...currentBook.initialUserState,
           authoredModules: {}
@@ -126,9 +137,32 @@ export const App: React.FC = () => {
     setViewMode('module');
   };
 
+  const handleLogout = () => {
+    authService.logout();
+    setCurrentUser(null);
+    setCurrentBook(null);
+    setViewMode('catalog');
+  };
+
+  // If not logged in, show AuthScreen (with link to AdminModal)
+  if (!currentUser) {
+    return (
+      <>
+        <AuthScreen
+          onLoginSuccess={(user) => setCurrentUser(user)}
+          onOpenAdmin={() => setIsAdminModalOpen(true)}
+        />
+        <AdminModal
+          isOpen={isAdminModalOpen}
+          onClose={() => setIsAdminModalOpen(false)}
+        />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-surface text-on-surface flex flex-col font-vazir selection:bg-primary selection:text-on-primary transition-all duration-700 relative overflow-hidden">
-      {/* Background Ambient Candlelight Orbs (scoped flicker to desk only; zero page jitter) */}
+      {/* Background Ambient Candlelight Orbs */}
       {isCandlelit && (
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden w-full h-full">
           <div className="desk-ambient-glow absolute -top-24 left-1/2 -translate-x-1/2 w-[90vw] max-w-[720px] h-[480px] rounded-full bg-[radial-gradient(circle,rgba(242,202,80,0.12)_0%,transparent_70%)]" />
@@ -136,7 +170,7 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Header (Only displayed in catalog mode to keep the opened book pure and uncluttered) */}
+      {/* Header */}
       {viewMode === 'catalog' && (
         <Header
           currentBook={currentBook}
@@ -153,6 +187,9 @@ export const App: React.FC = () => {
           onToggleAudioMute={() => setIsAudioMuted((prev) => !prev)}
           isCandlelit={isCandlelit}
           onToggleCandlelight={() => setIsCandlelit((prev) => !prev)}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          onOpenAdmin={() => setIsAdminModalOpen(true)}
         />
       )}
 
@@ -205,6 +242,12 @@ export const App: React.FC = () => {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+      />
+
+      {/* Admin Portal Modal */}
+      <AdminModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
       />
     </div>
   );

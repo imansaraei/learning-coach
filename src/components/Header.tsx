@@ -1,6 +1,7 @@
 import React from 'react';
-import { Settings, ArrowRight, Volume2, VolumeX, Sparkles, BookOpen } from 'lucide-react';
+import { Settings, ArrowRight, Volume2, VolumeX, Sparkles, BookOpen, User as UserIcon, LogOut, Shield } from 'lucide-react';
 import { BookCurriculum } from '../types/curriculum';
+import { User } from '../types/auth';
 
 interface HeaderProps {
   currentBook: BookCurriculum | null;
@@ -13,6 +14,9 @@ interface HeaderProps {
   onToggleAudioMute: () => void;
   isCandlelit: boolean;
   onToggleCandlelight: () => void;
+  currentUser?: User | null;
+  onLogout?: () => void;
+  onOpenAdmin?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -24,12 +28,15 @@ export const Header: React.FC<HeaderProps> = ({
   userStateKeyCount,
   isAudioMuted,
   onToggleAudioMute,
+  currentUser,
+  onLogout,
+  onOpenAdmin,
 }) => {
   return (
-    <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 px-4 py-3">
-      <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-md border-b border-outline-variant/30 px-3 sm:px-4 py-3">
+      <div className="max-w-4xl mx-auto flex items-center justify-between gap-2 sm:gap-3">
         {/* Left: Brand or Back Button */}
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {currentBook ? (
             <button
               onClick={onBackToBooks}
@@ -40,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span>بازگشت به کتابخانه</span>
             </button>
           ) : (
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center border border-primary/30 text-primary shrink-0">
                 <BookOpen className="w-4 h-4" />
               </div>
@@ -83,25 +90,56 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* User Badge & Logout */}
+          {currentUser && (
+            <div className="flex items-center gap-1 bg-surface-container/70 border border-outline-variant/40 rounded-full px-2 sm:px-2.5 py-1">
+              <span className="text-[11px] font-mono text-on-surface flex items-center gap-1 truncate max-w-[90px] sm:max-w-[120px] [direction:ltr]">
+                <UserIcon className="w-3 h-3 text-primary shrink-0" />
+                <span className="truncate">{currentUser.username}</span>
+              </span>
+              {onLogout && (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="text-secondary hover:text-rose-400 p-0.5 rounded transition-all"
+                  title="خروج از حساب کاربری"
+                >
+                  <LogOut className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Admin Portal Button */}
+          {onOpenAdmin && (
+            <button
+              onClick={onOpenAdmin}
+              className="p-1.5 sm:p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary transition-all active:scale-95"
+              title="پنل مدیریت کاربران"
+            >
+              <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+          )}
+
           {/* Audio Mute/Unmute */}
           <button
             onClick={onToggleAudioMute}
-            className={`p-2 rounded-full border transition-all active:scale-95 ${
+            className={`p-1.5 sm:p-2 rounded-full border transition-all active:scale-95 ${
               isAudioMuted
                 ? 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface'
                 : 'bg-surface-container-high border-primary/40 text-primary'
             }`}
             title={isAudioMuted ? 'فعال‌سازی صوت خوانش' : 'بی‌صدا کردن خوانش صوتی'}
           >
-            {isAudioMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            {isAudioMuted ? <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
           </button>
 
           {/* Live Framework State Drawer Toggle (Only in reading mode) */}
           {currentBook && (
             <button
               onClick={onToggleStateDrawer}
-              className="flex items-center gap-1.5 text-xs font-sans bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/50 text-on-surface px-3 py-1.5 rounded-full transition-all active:scale-95"
+              className="flex items-center gap-1.5 text-xs font-sans bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/50 text-on-surface px-2.5 sm:px-3 py-1.5 rounded-full transition-all active:scale-95"
               title="مشاهده وضعیت بلوپرینت"
             >
               <Sparkles className="w-3.5 h-3.5 text-primary" />
@@ -117,10 +155,10 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Settings Modal */}
           <button
             onClick={onOpenSettings}
-            className="p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary transition-all active:scale-95"
+            className="p-1.5 sm:p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary transition-all active:scale-95"
             title="تنظیمات هوش مصنوعی و کلید API"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>

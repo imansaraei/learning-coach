@@ -1,3 +1,7 @@
 name = "engaged-learning"
 compatibility_date = "2026-11-03"
 pages_build_output_dir = "dist"
+
+[[kv_namespaces]]
+binding = "USERS_KV"
+id = "653357220d9145cdaf3dc1eb494da50b"
