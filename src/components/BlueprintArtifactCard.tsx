@@ -132,6 +132,20 @@ export const BlueprintArtifactCard: React.FC<BlueprintArtifactCardProps> = ({
           ]
         };
 
+      case 'creative-confidence':
+        return {
+          oldPattern: `فلج کمال‌گرایی و خودسانسوری به دلیل هراس از قضاوت (${userState.creative_fear_or_perfectionism || 'ایده مسکوت مانده به خاطر ترس از شکست'})`,
+          newSystem: `تسلط هدایت‌شده (${userState.micro_courage_step || 'پرش‌های خرد با ریسک صفر'}) و تفکر با دست‌ها از طریق پیش‌نمونه سریع ۶۰ دقیقه‌ای (${userState.rapid_prototype_idea || 'ماک‌آپ خشن و ارزان'})`,
+          experiment48h:
+            userState.bias_toward_action_48h ||
+            'ارائه پیش‌نمونه ملموس به حداقل یک مخاطب واقعی در ۴۸ ساعت آینده و دریافت ۳ بازخورد اصلاحی',
+          keyRules: [
+            'خلاقیت عضله است نه نبوغ ژنتیکی؛ ترس از قضاوت با مواجهه تدریجی درمان می‌شود.',
+            'یک پیش‌نمونه خشن و سریع، ارزش هزاران ساعت جلسه و خیال‌پردازی در ذهن را دارد.',
+            'سوگیری به سمت اقدام (Bias toward Action): به جای فکر کردن، بسازید و آزمایش کنید.'
+          ]
+        };
+
       default:
         return {
           oldPattern: 'الگوی واکنشی گذشته',

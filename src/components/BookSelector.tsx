@@ -75,7 +75,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       text: 'text-[#211600]',
       authorColor: 'text-[#3d2c02]',
       height: 'h-[246px]',
-      width: 'w-[54px] sm:w-[60px]',
+      width: 'w-[48px] sm:w-[56px]',
       ribbonColor: 'bg-[#8a141b]',
       emblem: 'cyclone',
       spineTitle: 'POWER OF HABIT',
@@ -86,7 +86,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       text: 'text-[#363027]',
       authorColor: 'text-[#5e5343]',
       height: 'h-[238px]',
-      width: 'w-[50px] sm:w-[56px]',
+      width: 'w-[44px] sm:w-[52px]',
       emblem: 'flare',
       spineTitle: 'ATOMIC HABITS',
       authorLastName: 'CLEAR',
@@ -96,7 +96,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       text: 'text-[#f5d989]',
       authorColor: 'text-[#dec1b1]',
       height: 'h-[248px]',
-      width: 'w-[56px] sm:w-[62px]',
+      width: 'w-[50px] sm:w-[58px]',
       emblem: 'psychology',
       spineTitle: 'FAST & SLOW',
       authorLastName: 'KAHNEMAN',
@@ -111,6 +111,17 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       emblem: 'forum',
       spineTitle: 'CRUCIAL TALKS',
       authorLastName: 'PATTERSON',
+    },
+    'creative-confidence': {
+      bg: 'bg-[#9e4120]',
+      text: 'text-[#fce59f]',
+      authorColor: 'text-[#f5c69d]',
+      height: 'h-[244px]',
+      width: 'w-[46px] sm:w-[54px]',
+      ribbonColor: 'bg-[#e69d24]',
+      emblem: 'lightbulb',
+      spineTitle: 'CREATIVE CONF',
+      authorLastName: 'KELLEY',
     },
   };
 
@@ -137,7 +148,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       {/* ========================================================= */}
       <div className="w-full flex flex-col items-center">
         {/* Bookshelf Cavity (Recess) */}
-        <div className="relative w-full h-[290px] sm:h-[305px] bg-gradient-to-b from-[#090b0e] via-[#13100d] to-[#1c1611] rounded-t-2xl px-4 sm:px-8 flex items-end justify-center gap-3 sm:gap-6 border-t border-x border-[#2d1d13]/50 shadow-[inset_0_8px_30px_rgba(0,0,0,0.85)]">
+        <div className="relative w-full h-[290px] sm:h-[305px] bg-gradient-to-b from-[#090b0e] via-[#13100d] to-[#1c1611] rounded-t-2xl px-2 sm:px-6 flex items-end justify-center gap-2 sm:gap-5 border-t border-x border-[#2d1d13]/50 shadow-[inset_0_8px_30px_rgba(0,0,0,0.85)]">
           {/* Subtle Warm Amber Glow Behind Spines */}
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_100%,rgba(242,202,80,0.12)_0%,transparent_60%)]" />
 
@@ -209,9 +220,9 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
                   <div className="w-full h-0.5 bg-black/30 shadow-[0_1px_1px_rgba(255,255,255,0.2)] shrink-0 mt-1.5" />
 
                   {/* Bottom Author Stamp */}
-                  <div className="shrink-0 flex flex-col items-center gap-0.5 mt-1">
+                  <div className="shrink-0 flex flex-col items-center gap-0.5 mt-1 px-0.5 max-w-full">
                     <span
-                      className={`font-sans text-[8px] sm:text-[9px] ${style.authorColor} font-bold tracking-wider uppercase select-none`}
+                      className={`font-sans text-[7.5px] sm:text-[8.5px] ${style.authorColor} font-bold tracking-tight sm:tracking-normal uppercase select-none`}
                     >
                       {style.authorLastName}
                     </span>
