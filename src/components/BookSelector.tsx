@@ -65,7 +65,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       text: 'text-[#e5bf4c]',
       authorColor: 'text-[#8da390]',
       height: 'h-[252px]',
-      width: 'w-[52px] sm:w-[58px]',
+      width: 'w-[44px] sm:w-[52px]',
       emblem: 'explore',
       spineTitle: 'SITUATED',
       authorLastName: 'DUCKWORTH',
@@ -75,7 +75,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       text: 'text-[#211600]',
       authorColor: 'text-[#3d2c02]',
       height: 'h-[246px]',
-      width: 'w-[48px] sm:w-[56px]',
+      width: 'w-[44px] sm:w-[50px]',
       ribbonColor: 'bg-[#8a141b]',
       emblem: 'cyclone',
       spineTitle: 'POWER OF HABIT',
@@ -86,7 +86,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       text: 'text-[#363027]',
       authorColor: 'text-[#5e5343]',
       height: 'h-[238px]',
-      width: 'w-[44px] sm:w-[52px]',
+      width: 'w-[42px] sm:w-[48px]',
       emblem: 'flare',
       spineTitle: 'ATOMIC HABITS',
       authorLastName: 'CLEAR',
@@ -96,7 +96,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       text: 'text-[#f5d989]',
       authorColor: 'text-[#dec1b1]',
       height: 'h-[248px]',
-      width: 'w-[50px] sm:w-[58px]',
+      width: 'w-[44px] sm:w-[52px]',
       emblem: 'psychology',
       spineTitle: 'FAST & SLOW',
       authorLastName: 'KAHNEMAN',
@@ -106,7 +106,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       text: 'text-[#eec54d]',
       authorColor: 'text-[#8ba2c4]',
       height: 'h-[240px]',
-      width: 'w-[50px] sm:w-[56px]',
+      width: 'w-[44px] sm:w-[50px]',
       ribbonColor: 'bg-[#8cb1dd]',
       emblem: 'forum',
       spineTitle: 'CRUCIAL TALKS',
@@ -117,11 +117,22 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       text: 'text-[#fce59f]',
       authorColor: 'text-[#f5c69d]',
       height: 'h-[244px]',
-      width: 'w-[46px] sm:w-[54px]',
+      width: 'w-[44px] sm:w-[50px]',
       ribbonColor: 'bg-[#e69d24]',
       emblem: 'lightbulb',
       spineTitle: 'CREATIVE CONF',
       authorLastName: 'KELLEY',
+    },
+    'im-ok-youre-ok': {
+      bg: 'bg-[#1e425e]',
+      text: 'text-[#fde68a]',
+      authorColor: 'text-[#93c5fd]',
+      height: 'h-[246px]',
+      width: 'w-[44px] sm:w-[52px]',
+      ribbonColor: 'bg-[#38bdf8]',
+      emblem: 'handshake',
+      spineTitle: "I'M OK YOU'RE OK",
+      authorLastName: 'HARRIS',
     },
   };
 
@@ -148,7 +159,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       {/* ========================================================= */}
       <div className="w-full flex flex-col items-center">
         {/* Bookshelf Cavity (Recess) */}
-        <div className="relative w-full h-[290px] sm:h-[305px] bg-gradient-to-b from-[#090b0e] via-[#13100d] to-[#1c1611] rounded-t-2xl px-2 sm:px-6 flex items-end justify-center gap-2 sm:gap-5 border-t border-x border-[#2d1d13]/50 shadow-[inset_0_8px_30px_rgba(0,0,0,0.85)]">
+        <div className="relative w-full h-[290px] sm:h-[305px] bg-gradient-to-b from-[#090b0e] via-[#13100d] to-[#1c1611] rounded-t-2xl px-1.5 sm:px-6 flex items-end justify-center gap-1.5 sm:gap-4 border-t border-x border-[#2d1d13]/50 shadow-[inset_0_8px_30px_rgba(0,0,0,0.85)]">
           {/* Subtle Warm Amber Glow Behind Spines */}
           <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_100%,rgba(242,202,80,0.12)_0%,transparent_60%)]" />
 
@@ -210,7 +221,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
                   {/* Spine Title (Vertical Foil Stamp, strictly centered and bound) */}
                   <div className="flex-1 flex items-center justify-center min-h-0 overflow-hidden w-full px-1">
                     <span
-                      className={`font-garamond text-[11px] sm:text-[12px] ${style.text} font-bold tracking-widest uppercase [writing-mode:vertical-rl] rotate-180 select-none whitespace-nowrap`}
+                      className={`font-garamond text-[10px] sm:text-[11.5px] ${style.text} font-bold tracking-wider sm:tracking-widest uppercase [writing-mode:vertical-rl] rotate-180 select-none whitespace-nowrap`}
                     >
                       {style.spineTitle}
                     </span>

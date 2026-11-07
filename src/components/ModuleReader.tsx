@@ -62,6 +62,11 @@ const getPreCraftedSparks = (bookId: string, moduleIdx: number): string[] => {
       if (moduleIdx === 0) return ['ترس از قضاوت و تمسخر همکاران', 'وسواس کامل بودن قبل از شروع', 'حس این که من ذاتاً خلاق نیستم'];
       if (moduleIdx === 1) return ['اشتراک وویس ۳ دقیقه‌ای با دوستم', 'نوشتن پیش‌نویس بدون ویرایش', 'نشان دادن طرح به یک مخاطب امن'];
       return ['ساخت ماک‌آپ کاغذی در ۳۰ دقیقه', 'طراحی تست ۱ صفحه‌ای ایده', 'گرفتن بازخورد از ۳ کاربر تا فردا'];
+    case 'im-ok-youre-ok':
+      if (moduleIdx === 0) return ['فعال شدن والد سرزنش‌گر', 'احساس کودک بی‌پناه یا هراسان', 'قهر کردن و واکنش لجبازانه'];
+      if (moduleIdx === 1) return ['تله من ناخوبم - تو خوبی (حقارت)', 'تله من خوبم - تو ناخوبی (تکبر)', 'تصمیم آگاهانه به من خوبم - تو خوبی'];
+      if (moduleIdx === 2) return ['پاسخ آرام و فکت‌محور بالغ', 'قطع تراکنش متقاطع و پرخاشگری', 'دعوت طرف مقابل به وضعیت بالغ'];
+      return ['وقفه ۱۰ ثانیه‌ای قبل از پاسخ', 'شمارش تا ۱۰ برای ورود بالغ', 'پاسخ بالغ در جلسه کاری فردا'];
     default:
       return ['تأمل در موقعیت واقعی', 'شناسایی نشانه آغازین', 'طراحی اقدام جایگزین'];
   }
@@ -126,6 +131,14 @@ const getUserContextForStep = (
     const val = userState['applied_situational_levers'];
     if (Array.isArray(val) && val.length > 0) return val.join('، ');
     if (typeof val === 'string' && val.trim().length > 0) return val.trim();
+  } else if (normalized.includes('والد') || normalized.includes('کودک') || normalized.includes('نفسانی') || normalized.includes('ego')) {
+    matched = getVal(['dominant_ego_state']);
+  } else if (normalized.includes('وضعیت') || normalized.includes('تله') || normalized.includes('ناخوب') || normalized.includes('position')) {
+    matched = getVal(['life_position_trap']);
+  } else if (normalized.includes('متقاطع') || normalized.includes('بالغ') || normalized.includes('transaction')) {
+    matched = getVal(['crossed_transaction_cure']);
+  } else if (normalized.includes('وقفه') || normalized.includes('۱۰ ثانیه') || normalized.includes('10 ثانیه') || normalized.includes('driver')) {
+    matched = getVal(['adult_mastery_protocol_48h']);
   }
 
   if (!matched) return null;
