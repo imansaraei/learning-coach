@@ -24,7 +24,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-dim/85 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-dim/85 backdrop-blur-md animate-in fade-in duration-150 overscroll-contain">
       <div className="w-full max-w-lg bg-surface-container border border-outline-variant/60 rounded-3xl p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.85)] relative">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-outline-variant/40 mb-4">
@@ -44,7 +44,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition"
+            className="p-1.5 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-high active:scale-[0.96] transition-[transform,background-color,color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <X className="w-4 h-4" />
           </button>
@@ -96,13 +96,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
             <button
               type="button"
               onClick={onClose}
-              className="text-xs text-on-surface-variant hover:text-on-surface px-4 py-2 rounded-full"
+              className="text-xs text-on-surface-variant hover:text-on-surface px-4 py-2 rounded-full active:scale-[0.96] transition-[transform,color] duration-150 ease-out"
             >
               انصراف
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold px-5 py-2 rounded-full text-xs shadow-md transition-all active:scale-95"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold px-5 py-2 rounded-full text-xs shadow-md active:scale-[0.96] transition-[transform,filter] duration-150 ease-out hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {savedSuccess ? (
                 <>

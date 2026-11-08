@@ -32,7 +32,7 @@ export const LiveStateDrawer: React.FC<LiveStateDrawerProps> = ({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-surface-dim/80 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex justify-end bg-surface-dim/80 backdrop-blur-md animate-in fade-in duration-150 overscroll-contain">
       <div className="w-full max-w-md bg-surface-container border-l border-outline-variant/60 h-full flex flex-col shadow-[0_20px_50px_rgba(0,0,0,0.85)] animate-in slide-in-from-left duration-200">
         {/* Header */}
         <div className="p-4 border-b border-outline-variant/40 flex items-center justify-between bg-surface-container-high">
@@ -52,7 +52,7 @@ export const LiveStateDrawer: React.FC<LiveStateDrawerProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition"
+            className="p-1.5 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container-highest active:scale-[0.96] transition-[transform,background-color,color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             title="بستن"
           >
             <X className="w-4 h-4" />
@@ -112,7 +112,7 @@ export const LiveStateDrawer: React.FC<LiveStateDrawerProps> = ({
               <span className="text-[11px]">ساختار فنی داده‌ها</span>
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-primary bg-surface-container-high px-2.5 py-1 rounded-md border border-outline-variant/40 transition"
+                className="flex items-center gap-1 text-[11px] text-on-surface-variant hover:text-primary bg-surface-container-high px-2.5 py-1 rounded-md border border-outline-variant/40 active:scale-[0.96] transition-[transform,background-color,color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
               >
                 {copied ? (
                   <>

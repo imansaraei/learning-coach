@@ -122,7 +122,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess, onOpenAd
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoFocus
-                className="w-full bg-surface-container border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder:text-secondary/50 outline-none transition-all text-left [direction:ltr]"
+                className="w-full bg-surface-container border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder:text-secondary/50 outline-none transition-colors duration-150 ease-out text-left [direction:ltr]"
               />
             </div>
 
@@ -135,7 +135,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess, onOpenAd
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-surface-container border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder:text-secondary/50 outline-none transition-all text-left [direction:ltr]"
+                className="w-full bg-surface-container border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder:text-secondary/50 outline-none transition-colors duration-150 ease-out text-left [direction:ltr]"
               />
             </div>
 
@@ -149,7 +149,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess, onOpenAd
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-primary text-on-primary font-garamond font-bold text-base flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(242,202,80,0.3)] hover:brightness-110 active:scale-98 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-primary text-on-primary font-garamond font-bold text-base flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(242,202,80,0.3)] hover:brightness-110 active:scale-[0.96] transition-[transform,filter] duration-150 ease-out cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
             >
               <span>{loading ? 'در حال ورود...' : 'ورود به کتابخانه'}</span>
               <ArrowLeft className="w-4 h-4" />
@@ -178,7 +178,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess, onOpenAd
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 autoFocus
-                className="w-full bg-surface-container border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder:text-secondary/50 outline-none transition-all text-left [direction:ltr]"
+                className="w-full bg-surface-container border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder:text-secondary/50 outline-none transition-colors duration-150 ease-out text-left [direction:ltr]"
               />
             </div>
 
@@ -191,7 +191,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess, onOpenAd
                 placeholder="تکرار رمز جدید"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-surface-container border border-outline-variant/50 focus:border-primary rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder:text-secondary/50 outline-none transition-all text-left [direction:ltr]"
+                className="w-full bg-surface-container border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder:text-secondary/50 outline-none transition-colors duration-150 ease-out text-left [direction:ltr]"
               />
             </div>
 
@@ -205,7 +205,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess, onOpenAd
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-garamond font-bold text-base flex items-center justify-center gap-2 shadow hover:brightness-110 active:scale-98 transition-all cursor-pointer disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-garamond font-bold text-base flex items-center justify-center gap-2 shadow hover:brightness-110 active:scale-[0.96] transition-[transform,background-color] duration-150 ease-out cursor-pointer disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>{loading ? 'در حال ثبت...' : 'ذخیره رمز و ورود به کتاب‌ها'}</span>

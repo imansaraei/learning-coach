@@ -333,7 +333,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
           <span className="font-garamond text-xs tracking-[0.2em] text-[#785b30] uppercase font-bold">
             LIBER {romanNumeral} · {book.titleEn.split(':')[0]}
           </span>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => {
@@ -343,13 +343,16 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
                   speechService.speak(`${currentModule.title}. ${effectiveLesson.headline} ${effectiveLesson.concept}`);
                 }
               }}
-              className="text-[#785b30] hover:text-[#996515] px-2 py-0.5 rounded-full hover:bg-[#aa936d]/20 border border-[#aa936d]/30 transition-all cursor-pointer flex items-center gap-1"
+              className="text-[#785b30] hover:text-[#996515] active:scale-[0.96] px-2 py-0.5 rounded-full hover:bg-[#aa936d]/20 border border-[#aa936d]/30 transition-transform duration-150 ease-out cursor-pointer flex items-center gap-1 shrink-0"
               title="پخش/توقف صوت طبیعی فارسی"
             >
               <Volume2 className="w-3 h-3" />
               <span className="text-[10px] font-sans font-medium">صوت طبیعی</span>
             </button>
-            <span className="font-garamond text-xs text-[#846b4b] italic">
+            <span
+              className="font-garamond text-xs text-[#846b4b] italic truncate max-w-[110px] sm:max-w-xs"
+              title={`فصل ${romanNumeral}: ${currentModule.frameworkStep}`}
+            >
               فصل {romanNumeral}: {currentModule.frameworkStep}
             </span>
           </div>
@@ -400,44 +403,81 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
             </span>
           </div>
 
-          <div
-            className="grid gap-2"
-            style={{
-              gridTemplateColumns: `repeat(${Math.min(effectiveLesson.diagramSteps.length, 4)}, minmax(0, 1fr))`,
-            }}
-          >
-            {effectiveLesson.diagramSteps.map((step, idx) => {
-              const userAnnotation = getUserContextForStep(step.label, userState);
-              return (
-                <div
-                  key={idx}
-                  className="bg-[#fcfaf3] border border-[#d5c3aa] rounded-md p-2 flex flex-col justify-between shadow-2xs transition-colors"
-                >
-                  <div>
-                    <div className="flex items-center gap-1 font-garamond text-xs text-[#574236] font-bold mb-0.5">
-                      <span className="w-4 h-4 rounded-full bg-[#d4af37]/30 text-[#3c2f00] text-[10px] flex items-center justify-center font-bold">
-                        {idx + 1}
-                      </span>
-                      <span className="truncate">{step.label}</span>
+          {isDoublePage ? (
+            <div
+              className="grid gap-2"
+              style={{
+                gridTemplateColumns: `repeat(${Math.min(effectiveLesson.diagramSteps.length, 4)}, minmax(0, 1fr))`,
+              }}
+            >
+              {effectiveLesson.diagramSteps.map((step, idx) => {
+                const userAnnotation = getUserContextForStep(step.label, userState);
+                return (
+                  <div
+                    key={idx}
+                    className="bg-[#fcfaf3] border border-[#d5c3aa] rounded-lg p-2.5 flex flex-col justify-between shadow-2xs transition-colors"
+                  >
+                    <div>
+                      <div className="flex items-center gap-1.5 font-garamond text-xs text-[#574236] font-bold mb-1">
+                        <span className="w-4 h-4 rounded-full bg-[#d4af37]/35 text-[#3c2f00] text-[10px] flex items-center justify-center font-bold shrink-0">
+                          {idx + 1}
+                        </span>
+                        <span className="break-words leading-tight">{step.label}</span>
+                      </div>
+
+                      {userAnnotation && (
+                        <div
+                          className="my-1 px-1.5 py-0.5 rounded bg-[#e8dbc3]/70 border border-[#c4ae8f]/50 text-[10px] text-[#1c2430] font-vazir font-semibold leading-tight line-clamp-1"
+                          title={userAnnotation}
+                        >
+                          «{userAnnotation}»
+                        </div>
+                      )}
                     </div>
 
-                    {userAnnotation && (
-                      <div
-                        className="my-1 px-1.5 py-0.5 rounded bg-[#e8dbc3]/70 border border-[#c4ae8f]/50 text-[10px] text-[#1c2430] font-vazir font-semibold leading-tight line-clamp-1"
-                        title={userAnnotation}
-                      >
-                        «{userAnnotation}»
-                      </div>
-                    )}
+                    <p className="text-[11px] text-[#3f382f] leading-snug font-vazir line-clamp-3 mt-1">
+                      {step.description}
+                    </p>
                   </div>
-
-                  <p className="text-[11px] text-[#3f382f] leading-snug font-vazir line-clamp-2 mt-0.5">
-                    {step.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* Mobile Vertical Flow with high legibility and zero awkward truncation */
+            <div className="flex flex-col gap-1.5">
+              {effectiveLesson.diagramSteps.map((step, idx) => {
+                const userAnnotation = getUserContextForStep(step.label, userState);
+                return (
+                  <div
+                    key={idx}
+                    className="bg-[#fcfaf3] border border-[#d5c3aa] rounded-lg p-2 flex items-start gap-2 shadow-2xs"
+                  >
+                    <span className="w-5 h-5 rounded-full bg-[#d4af37]/35 text-[#3c2f00] text-[10px] flex items-center justify-center font-bold shrink-0 mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1 flex-wrap">
+                        <span className="font-garamond text-xs text-[#574236] font-bold">
+                          {step.label}
+                        </span>
+                        {userAnnotation && (
+                          <span
+                            className="px-1.5 py-0.5 rounded bg-[#e8dbc3]/70 border border-[#c4ae8f]/50 text-[9.5px] text-[#1c2430] font-vazir font-semibold truncate max-w-[130px]"
+                            title={userAnnotation}
+                          >
+                            «{userAnnotation}»
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10.5px] text-[#3f382f] leading-relaxed font-vazir mt-0.5">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           <div className="mt-2 text-center font-garamond text-[11px] text-[#4f3c21] italic bg-[#fbf8f0]/95 px-2 py-1 rounded border border-[#aa936d]/20">
             « {effectiveLesson.keyTakeaway} »
@@ -451,7 +491,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
         {!isDoublePage && (
           <button
             onClick={() => triggerPageTurn(() => setMobileLeaf(1), 'forward')}
-            className="flex items-center gap-1 text-xs font-bold text-[#694e24] hover:text-[#22180f] transition-colors"
+            className="flex items-center gap-1 text-xs font-bold text-[#694e24] hover:text-[#22180f] active:scale-[0.96] transition-[transform,color] duration-150 ease-out"
           >
             <span>ورق زدن به صفحه تحریر</span>
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -498,7 +538,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
                   key={idx}
                   type="button"
                   onClick={() => handleSparkClick(spark)}
-                  className="px-2.5 py-1 rounded-full bg-[#eee4d0]/80 hover:bg-[#e4d7bf] border border-[#d5c3aa] text-[#694e24] hover:text-[#22180f] font-garamond text-xs flex items-center gap-1 transition-colors shadow-2xs"
+                  className="px-2.5 py-1 rounded-full bg-[#eee4d0]/80 hover:bg-[#e4d7bf] active:scale-[0.96] border border-[#d5c3aa] text-[#694e24] hover:text-[#22180f] font-garamond text-xs flex items-center gap-1 transition-[transform,background-color] duration-150 ease-out shadow-2xs"
                 >
                   <span className="material-symbols-outlined text-[11px]">draw</span>
                   <span>{spark}</span>
@@ -531,7 +571,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
                 <button
                   type="button"
                   onClick={toggleListening}
-                  className={`p-1.5 rounded-full border transition-all ${
+                  className={`p-1.5 rounded-full border active:scale-[0.96] transition-transform duration-150 ease-out ${
                     isListening
                       ? 'bg-rose-900 text-rose-100 border-rose-600 animate-pulse'
                       : 'bg-[#fcfaf3] border-[#d5c3aa] text-[#785b30] hover:text-[#22180f]'
@@ -544,7 +584,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
                 <button
                   type="submit"
                   disabled={!userInput.trim() || isLoading}
-                  className="px-4 py-1.5 rounded-full bg-[#20140c] text-[#f2ca50] font-garamond font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-[#342014] transition-all active:scale-95 disabled:opacity-40"
+                  className="px-4 py-1.5 rounded-full bg-[#20140c] text-[#f2ca50] font-garamond font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-[#342014] active:scale-[0.96] transition-[transform,background-color] duration-150 ease-out disabled:opacity-40"
                 >
                   {isLoading ? (
                     <>
@@ -595,7 +635,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
           isLastModule ? (
             <button
               onClick={() => triggerPageTurn(onShowBlueprint, 'forward')}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#8c2a1e] text-[#ffe088] font-bold text-xs shadow-md hover:bg-[#a63325] transition-all active:scale-95"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#8c2a1e] text-[#ffe088] font-bold text-xs shadow-md hover:bg-[#a63325] active:scale-[0.96] transition-[transform,background-color] duration-150 ease-out"
             >
               <span>ورق زدن به طومار زرین بلوپرینت</span>
               <CheckCircle2 className="w-4 h-4" />
@@ -603,7 +643,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
           ) : (
             <button
               onClick={() => triggerPageTurn(onGoToNextModule, 'forward')}
-              className="flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#20140c] text-[#f2ca50] font-bold text-xs shadow-md hover:bg-[#342014] transition-all active:scale-95"
+              className="flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#20140c] text-[#f2ca50] font-bold text-xs shadow-md hover:bg-[#342014] active:scale-[0.96] transition-[transform,background-color] duration-150 ease-out"
             >
               <span>ورق زدن به فصل بعد</span>
               <ArrowLeft className="w-3.5 h-3.5" />
@@ -612,7 +652,7 @@ export const ModuleReader: React.FC<ModuleReaderProps> = ({
         ) : !isDoublePage ? (
           <button
             onClick={() => triggerPageTurn(() => setMobileLeaf(0), 'backward')}
-            className="flex items-center gap-1 text-xs font-bold text-[#694e24] hover:text-[#22180f] transition-colors"
+            className="flex items-center gap-1 text-xs font-bold text-[#694e24] hover:text-[#22180f] active:scale-[0.96] transition-[transform,color] duration-150 ease-out"
           >
             <ArrowRight className="w-3.5 h-3.5" />
             <span>برگ قبلی درس</span>

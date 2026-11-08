@@ -258,7 +258,7 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
               playPageTurnSound();
               setMobileLeaf(1);
             }}
-            className="flex items-center gap-1 text-xs font-bold text-[#694e24] hover:text-[#22180f]"
+            className="flex items-center gap-1 text-xs font-bold text-[#694e24] hover:text-[#22180f] active:scale-[0.96] transition-[transform,color] duration-150 ease-out"
           >
             <span>ورق زدن به لوح اقدام</span>
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -322,7 +322,7 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
         <div className="flex items-center gap-1.5">
           <button
             onClick={onRestartBook}
-            className="p-1.5 rounded-full bg-[#eee4d0] hover:bg-[#e4d7bf] text-[#694e24] border border-[#d5c3aa] transition-colors"
+            className="p-1.5 rounded-full bg-[#eee4d0] hover:bg-[#e4d7bf] active:scale-[0.96] text-[#694e24] border border-[#d5c3aa] transition-[transform,background-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#8c6a35]"
             title="تکرار جلسه"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -330,7 +330,7 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 
           <button
             onClick={handleCopyText}
-            className="px-3 py-1 rounded-full bg-[#eee4d0] hover:bg-[#e4d7bf] text-[#694e24] border border-[#d5c3aa] font-garamond text-xs font-bold flex items-center gap-1 transition-colors"
+            className="px-3 py-1 rounded-full bg-[#eee4d0] hover:bg-[#e4d7bf] active:scale-[0.96] text-[#694e24] border border-[#d5c3aa] font-garamond text-xs font-bold flex items-center gap-1 transition-[transform,background-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#8c6a35]"
           >
             {copied ? <Check className="w-3 h-3 text-[#2a1d0f]" /> : <Share2 className="w-3 h-3" />}
             <span>{copied ? 'کپی شد' : 'کپی طومار'}</span>
@@ -344,7 +344,7 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
                 playPageTurnSound();
                 setMobileLeaf(0);
               }}
-              className="text-xs font-garamond text-[#694e24] flex items-center gap-1"
+              className="text-xs font-garamond text-[#694e24] flex items-center gap-1 active:scale-[0.96] transition-[transform,color] duration-150 ease-out"
             >
               <ArrowRight className="w-3 h-3" />
               <span>لوح نخست</span>
@@ -353,7 +353,7 @@ ${blueprint.keyRules.map((r, i) => `${i + 1}. ${r}`).join('\n')}
 
           <button
             onClick={() => window.print()}
-            className="px-4 py-1.5 rounded-full bg-[#20140c] text-[#f2ca50] font-garamond font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-[#342014] transition-all active:scale-95"
+            className="px-4 py-1.5 rounded-full bg-[#20140c] text-[#f2ca50] font-garamond font-bold text-xs flex items-center gap-1.5 shadow-md hover:bg-[#342014] active:scale-[0.96] transition-[transform,background-color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Download className="w-3.5 h-3.5" />
             <span>چاپ / PDF</span>

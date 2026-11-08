@@ -171,12 +171,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onUserC
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4 animate-in fade-in duration-200 overscroll-contain">
       <div className="relative w-full max-w-2xl bg-[#14171d] border border-outline-variant/40 rounded-2xl shadow-2xl p-6 sm:p-7 max-h-[90vh] overflow-y-auto text-right font-vazir">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 left-4 p-2 rounded-full text-secondary hover:text-on-surface hover:bg-surface-container transition-all"
+          className="absolute top-4 left-4 p-2 rounded-full text-secondary hover:text-on-surface hover:bg-surface-container active:scale-[0.96] transition-[transform,background-color,color] duration-150 ease-out"
         >
           <X className="w-5 h-5" />
         </button>
@@ -225,7 +225,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onUserC
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm shadow hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+              className="w-full py-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm shadow hover:brightness-110 active:scale-[0.96] transition-[transform,filter] duration-150 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               احراز هویت و ورود به پنل
             </button>
@@ -336,7 +336,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({ isOpen, onClose, onUserC
 
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-5 py-2 rounded-lg bg-primary text-on-primary font-bold text-xs flex items-center justify-center gap-1.5 shadow hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2 rounded-lg bg-primary text-on-primary font-bold text-xs flex items-center justify-center gap-1.5 shadow hover:brightness-110 active:scale-[0.96] transition-[transform,filter] duration-150 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span>ثبت و تولید کاربر</span>

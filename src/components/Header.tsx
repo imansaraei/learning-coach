@@ -40,11 +40,12 @@ export const Header: React.FC<HeaderProps> = ({
           {currentBook ? (
             <button
               onClick={onBackToBooks}
-              className="flex items-center gap-1.5 text-xs font-sans font-medium text-on-surface-variant hover:text-primary bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 px-3 py-1.5 rounded-full transition-all active:scale-95 shrink-0"
+              className="flex items-center gap-1.5 text-xs font-sans font-medium text-on-surface-variant hover:text-primary bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 px-3 py-1.5 rounded-full active:scale-[0.96] transition-[transform,background-color,color] duration-150 ease-out shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               title="بازگشت به قفسه کتاب‌ها"
             >
               <ArrowRight className="w-3.5 h-3.5 text-primary" />
-              <span>بازگشت به کتابخانه</span>
+              <span className="hidden sm:inline">بازگشت به کتابخانه</span>
+              <span className="sm:hidden">بازگشت</span>
             </button>
           ) : (
             <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
@@ -115,7 +116,7 @@ export const Header: React.FC<HeaderProps> = ({
           {onOpenAdmin && (
             <button
               onClick={onOpenAdmin}
-              className="p-1.5 sm:p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary transition-all active:scale-95"
+              className="p-1.5 sm:p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary active:scale-[0.96] transition-[transform,background-color,color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               title="پنل مدیریت کاربران"
             >
               <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -125,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Audio Mute/Unmute */}
           <button
             onClick={onToggleAudioMute}
-            className={`p-1.5 sm:p-2 rounded-full border transition-all active:scale-95 ${
+            className={`p-1.5 sm:p-2 rounded-full border active:scale-[0.96] transition-[transform,background-color,color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
               isAudioMuted
                 ? 'bg-surface-container border-outline-variant/30 text-outline hover:text-on-surface'
                 : 'bg-surface-container-high border-primary/40 text-primary'
@@ -139,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
           {currentBook && (
             <button
               onClick={onToggleStateDrawer}
-              className="flex items-center gap-1.5 text-xs font-sans bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/50 text-on-surface px-2.5 sm:px-3 py-1.5 rounded-full transition-all active:scale-95"
+              className="flex items-center gap-1.5 text-xs font-sans bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/50 text-on-surface px-2.5 sm:px-3 py-1.5 rounded-full active:scale-[0.96] transition-[transform,background-color,color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
               title="مشاهده وضعیت بلوپرینت"
             >
               <Sparkles className="w-3.5 h-3.5 text-primary" />
@@ -155,7 +156,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Settings Modal */}
           <button
             onClick={onOpenSettings}
-            className="p-1.5 sm:p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary transition-all active:scale-95"
+            className="p-1.5 sm:p-2 rounded-full bg-surface-container hover:bg-surface-container-high border border-outline-variant/40 text-on-surface-variant hover:text-primary active:scale-[0.96] transition-[transform,background-color,color] duration-150 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
             title="تنظیمات هوش مصنوعی و کلید API"
           >
             <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

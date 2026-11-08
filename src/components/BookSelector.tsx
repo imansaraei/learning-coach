@@ -190,7 +190,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
                 }}
                 onMouseLeave={() => setHoveredBookId(null)}
                 onClick={() => handleBookClick(book)}
-                className={`group relative flex flex-col items-center cursor-pointer transition-all duration-300 z-20 sm:hover:-translate-y-3 ${
+                className={`group relative flex flex-col items-center cursor-pointer transition-transform duration-200 ease-out z-20 sm:hover:-translate-y-3 ${
                   isBeingOpened ? '-translate-y-6 scale-105' : 'translate-y-0'
                 }`}
               >
@@ -203,7 +203,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
 
                 {/* Spine Body — Strictly overflow-hidden so zero text can dangle */}
                 <div
-                  className={`relative ${style.width} ${style.height} ${style.bg} rounded-t-sm flex flex-col justify-between items-center py-2.5 overflow-hidden shadow-[0_12px_24px_rgba(0,0,0,0.6),inset_0_0_8px_rgba(0,0,0,0.3)] transition-all duration-300 border-x border-black/25 ${
+                  className={`relative ${style.width} ${style.height} ${style.bg} rounded-t-sm flex flex-col justify-between items-center py-2.5 overflow-hidden shadow-[0_12px_24px_rgba(0,0,0,0.6),inset_0_0_8px_rgba(0,0,0,0.3)] transition-[box-shadow,transform] duration-200 ease-out border-x border-black/25 ${
                     isSelected ? 'ring-1 ring-primary/60' : ''
                   }`}
                 >
@@ -264,7 +264,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
       {/* ========================================================= */}
       {/* FOCUSED BOOK DETAIL CARD (Minimal, Clean & Replaces 7 Cards) */}
       {/* ========================================================= */}
-      <div className="w-full max-w-xl bg-surface-container/60 hover:bg-surface-container border border-outline-variant/35 rounded-2xl p-5 sm:p-6 transition-all duration-300 shadow-md text-right">
+      <div className="w-full max-w-xl bg-surface-container/60 hover:bg-surface-container border border-outline-variant/35 rounded-2xl p-5 sm:p-6 transition-colors duration-200 ease-out shadow-md text-right">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5 min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
@@ -300,7 +300,7 @@ export const BookSelector: React.FC<BookSelectorProps> = ({
           <div className="shrink-0 pt-2 sm:pt-0">
             <button
               onClick={() => handleBookClick(activeBook)}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-primary text-on-primary font-garamond font-bold text-sm flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(242,202,80,0.3)] hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+              className="w-full sm:w-auto pr-5 pl-4 py-2.5 rounded-full bg-primary text-on-primary font-garamond font-bold text-sm flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(242,202,80,0.3)] hover:brightness-110 active:scale-[0.96] transition-[transform,filter] duration-150 ease-out cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface-container"
             >
               <span>گشودن کتاب</span>
               <ArrowLeft className="w-4 h-4" />
